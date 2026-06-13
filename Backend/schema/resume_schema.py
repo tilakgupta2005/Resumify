@@ -1,6 +1,6 @@
 from datetime import date
 from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import Annotated, Optional, Literal, List
+from typing import Annotated, Optional, List
 import re
 
 class Name(BaseModel):
@@ -17,14 +17,14 @@ class Name(BaseModel):
     
     @field_validator('middle_name')
     @classmethod
-    def validate_name(cls, v: str) -> str:
+    def validate_middle_name(cls, v: str) -> str:
         if not re.match(r"^[a-zA-Z\s]+$", v):
             raise ValueError("Middle Name can only contain letters and spaces")
         return v.strip()
 
     @field_validator('last_name')
     @classmethod
-    def validate_name(cls, v: str) -> str:
+    def validate_last_name(cls, v: str) -> str:
         if not re.match(r"^[a-zA-Z\s]+$", v):
             raise ValueError("Last Name can only contain letters and spaces")
         return v.strip()
@@ -69,7 +69,7 @@ class PersonalInfo(BaseModel):
 
     @field_validator("linkedin")
     @classmethod
-    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+    def validate_linkedin_url(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
         if not (v.startswith("https://www.linkedin.com/in/")):
@@ -78,7 +78,7 @@ class PersonalInfo(BaseModel):
     
     @field_validator("github")
     @classmethod
-    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+    def validate_github_url(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
         if not (v.startswith("https://github.com/")):
@@ -87,7 +87,7 @@ class PersonalInfo(BaseModel):
     
     @field_validator("portfolio")
     @classmethod
-    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+    def validate_portfolio_url(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
         if not (v.startswith("http://") or v.startswith("https://")):
@@ -96,7 +96,7 @@ class PersonalInfo(BaseModel):
 
     @field_validator('phone')
     @classmethod
-    def validate_name(cls, v: str) -> str:
+    def validate_phone(cls, v: str) -> str:
         if not re.match(r"^\+\d{1,3}\d{7,14}$" ,v):
             raise ValueError("Phone number must start with country code (e.g., +1) and contain only digits")
         return v.strip()
