@@ -1,6 +1,7 @@
 from datetime import date
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, computed_field
 from typing import Annotated, Optional, List
+from utils.embedding_gen import get_embedding
 import re
 
 class Name(BaseModel):
@@ -109,7 +110,16 @@ class Projects(BaseModel):
     project_url: Annotated[str, Field(..., title="Project URL", description="URL to the project repository or live site", example="https://github.com/username/e-commerce-website")]
     technologies_used: Annotated[List[str], Field(..., max_length=500, title="Technologies Used", description="Comma-separated list of technologies used in the project", example=["Python", "FastAPI"])]
     description: Annotated[str, Field(..., max_length=1000, title="Project Description", description="A brief description of the project", example="Developed a full-stack e-commerce website with user authentication and payment integration.")]
-    
+
+    @computed_field
+    @property
+    def embedding(self) -> list[float]:
+        text = f"""
+        project_name: {self.project_name}
+        technologies_used: {', '.join(self.technologies_used)}
+        description: {self.description}"""
+        return get_embedding(text)
+
     @field_validator("end_date")
     @classmethod
     def validate_end_date(cls, v, info):
