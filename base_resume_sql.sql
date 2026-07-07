@@ -1,7 +1,6 @@
-
 CREATE TABLE personal_info (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     first_name VARCHAR(100),
     middle_name VARCHAR(100),
     last_name VARCHAR(100),
@@ -14,7 +13,7 @@ CREATE TABLE personal_info (
 
 CREATE TABLE locations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(50),
@@ -24,13 +23,13 @@ CREATE TABLE locations (
 
 CREATE TABLE skills (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     skills TEXT[] DEFAULT '{}'
 );
 
 CREATE TABLE experience (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     company_name VARCHAR(255),
     designation VARCHAR(255),
     ctc DECIMAL(15, 2),
@@ -42,7 +41,7 @@ CREATE TABLE experience (
 
 CREATE TABLE education (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     institution_name VARCHAR(255),
     degree VARCHAR(255),
     field_of_study VARCHAR(255),
@@ -53,19 +52,20 @@ CREATE TABLE education (
 
 CREATE TABLE projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     project_name VARCHAR(255),
     team_size INT,
     start_date DATE,
     end_date DATE,
     project_url TEXT,
     technologies_used TEXT[] DEFAULT '{}',
-    description TEXT
+    description TEXT,
+    embedding vector(384)
 );
 
 CREATE TABLE certifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     title VARCHAR(255),
     issuing_organization VARCHAR(255),
     issue_date DATE,
@@ -74,23 +74,23 @@ CREATE TABLE certifications (
 
 CREATE TABLE technical_participation (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     technical_participation TEXT
 );
 
 CREATE TABLE co_curricular (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     co_curricular TEXT
 );
 CREATE TABLE extra_curricular (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     extra_curricular TEXT
 );
 
 CREATE TABLE achievements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID FOREIGN KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     achievements TEXT
 );

@@ -152,7 +152,8 @@ BEGIN
             end_date,
             project_url,
             technologies_used,
-            description
+            description,
+            embedding
         )
         VALUES (
             p_user_id,
@@ -166,7 +167,8 @@ BEGIN
                     proj->'technologies_used'
                 )
             ),
-            proj->>'description'
+            proj->>'description',
+            (proj->>'embedding')::vector -- Assuming embedding is stored as a JSON array of floats
         );
     END LOOP;
 
