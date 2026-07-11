@@ -139,6 +139,7 @@ class Experience(BaseModel):
     start_date: Annotated[date, Field(..., title="Start Date", description="Employment start date in YYYY-MM-DD format", example="2020-01-01")]
     end_date: Annotated[Optional[date], Field(None, title="End Date", description="Employment end date in YYYY-MM-DD format, or null if ongoing", example="2022-12-31")]
     skills: Annotated[List[str], Field(default=[], title="Skills", description="List of skills acquired in this experience", example=["Python", "FastAPI"])]
+    description: Annotated[str, Field(..., max_length=1000, title="Experience Description", description="A brief description of the experience", example="Developed a full-stack e-commerce website with user authentication and payment integration.")]
 
     @field_validator("end_date")
     @classmethod

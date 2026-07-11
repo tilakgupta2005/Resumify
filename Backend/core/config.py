@@ -10,6 +10,6 @@ JWT_SECRET_KEY = dotenv.get_key('.env', 'JWT_SECRET_KEY')
 JWT_ALGORITHM = dotenv.get_key('.env', 'JWT_ALGORITHM')
 
 
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.7)
+llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0.7)
 
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")

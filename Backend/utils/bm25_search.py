@@ -23,22 +23,3 @@ def bm25_search(documents, search_query, n=3):
     )
 
     return results
-
-
-# Example
-
-documents = [
-    "Apple launches new iPhone",
-    "Samsung launches Galaxy phone",
-    "Samsung Galaxy S21 review",
-    "iPhone camera review"
-]
-
-results = bm25_search(
-    documents,
-    """apple iphone""",
-    n=3
-)
-
-for result in results:
-    print(result)
