@@ -1,0 +1,309 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[left=0.75in,right=0.75in,top=0.7in,bottom=0.7in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{ragged2e}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue
+}
+
+\begin{document}
+
+
+%================ HEADER ================
+
+\begin{center}
+
+{\LARGE \textbf{
+{{ personal_info.name.first_name }}
+{% if personal_info.name.middle_name %}
+{{ personal_info.name.middle_name }}
+{% endif %}
+{{ personal_info.name.last_name }}
+}}
+
+\par
+
+{{ personal_info.location.city }},
+{{ personal_info.location.state }},
+{{ personal_info.location.country }}
+
+\par
+\href{mailto:{{personal_info.email}}}{{personal_info.email}}
+\quad|\quad
+{{personal_info.phone}}
+{% if personal_info.linkedin %}
+\quad|\quad
+\href{ {{personal_info.linkedin}} }{ {{personal_info.linkedin}} }
+{% endif %}
+{% if personal_info.github %}
+\quad|\quad
+\href{ {{personal_info.github}} }{ {{personal_info.github}} }
+{% endif %}
+{% if personal_info.portfolio %}
+\quad|\quad
+\href{ {{personal_info.portfolio}} }{ {{personal_info.portfolio}} }
+{% endif %}
+\end{center}
+
+
+
+%================ SUMMARY ================
+
+{% if professional_summary %}
+
+\section*{PROFESSIONAL SUMMARY}
+
+\justifying
+
+{{professional_summary}}
+
+{% endif %}
+
+
+
+
+%================ SKILLS ================
+
+{% if skills %}
+
+\section*{TECHNICAL SKILLS}
+
+\justifying
+
+\textbf{Skills: }{{skills | join(", ")}}
+
+
+{% endif %}
+
+
+
+
+%================ EXPERIENCE ================
+{% if experience %}
+
+\section*{EXPERIENCE}
+
+{% for exp in experience %}
+
+\noindent
+\textbf{ {{exp.designation}} }\hfill{{exp.start_date}} -- {% if exp.end_date %}{{exp.end_date}}{% else %}Present{% endif %}
+\par
+\textit{ {{exp.company}} | {{exp.location}} }
+
+
+\par
+
+\begin{itemize}[noitemsep,topsep=0pt]
+
+{% for item in exp.description %}
+\item {{item}}
+{% endfor %}
+
+\end{itemize}
+
+{% endfor %}
+
+{% endif %}
+
+
+%================ PROJECTS ================
+
+{% if projects %}
+
+\section*{PROJECTS}
+
+{% for project in projects %}
+
+\noindent
+\textbf{ {{project.project_name}} }\hfill{{project.start_date}} -- {% if project.end_date %}{{project.end_date}}{% else %}Present{% endif %}
+
+\par
+
+\textit{ {{project.technologies_used | join(", ")}} }
+
+{% if project.project_url %}
+
+\par
+
+\href{ {{project.project_url}} }{{project.project_url}}
+
+{% endif %}
+
+\begin{itemize}[noitemsep,topsep=0pt]
+
+{% for item in project.description %}
+\item {{item}}
+{% endfor %}
+
+\end{itemize}
+
+{% endfor %}
+
+{% endif %}
+
+
+%================ EDUCATION ================
+
+
+{% if education %}
+
+\section*{EDUCATION}
+
+{% for edu in education %}
+
+\noindent
+\textbf{
+{{edu.degree}},
+{{edu.field_of_study}}
+}\hfill{{edu.start_date}} -- {{edu.end_date}}
+\par
+{{edu.institution_name}}
+{% if edu.grade %}
+Grade:{{edu.grade}}
+
+{% endif %}
+
+
+\vspace{4pt}
+
+
+{% endfor %}
+
+
+{% endif %}
+
+
+
+
+
+
+%================ CERTIFICATIONS ================
+
+
+{% if certifications %}
+
+
+\section*{CERTIFICATIONS}
+
+
+\begin{itemize}[noitemsep,topsep=0pt]
+
+
+{% for cert in certifications %}
+
+\item {{cert}}
+
+{% endfor %}
+
+
+\end{itemize}
+
+
+{% endif %}
+
+
+
+
+
+
+%================ PARTICIPATION ================
+
+
+{% if technical_participation %}
+
+
+\section*{HACKATHONS \& TECHNICAL PARTICIPATION}
+
+
+\begin{itemize}[noitemsep,topsep=0pt]
+
+
+{% for item in technical_participation %}
+
+\item {{item}}
+
+{% endfor %}
+
+
+\end{itemize}
+
+
+{% endif %}
+
+
+
+
+
+
+
+%================ LEADERSHIP ================
+
+
+{% if extra_curricular or co_curricular %}
+
+
+\section*{LEADERSHIP \& COMMUNITY}
+
+
+\begin{itemize}[noitemsep,topsep=0pt]
+
+
+{% for item in extra_curricular %}
+
+\item {{item}}
+
+{% endfor %}
+
+
+{% for item in co_curricular %}
+
+\item {{item}}
+
+{% endfor %}
+
+
+\end{itemize}
+
+
+{% endif %}
+
+
+
+
+
+
+
+%================ ACHIEVEMENTS ================
+
+
+{% if achievements %}
+
+
+\section*{ACHIEVEMENTS}
+
+
+\begin{itemize}[noitemsep,topsep=0pt]
+
+
+{% for achievement in achievements %}
+
+\item {{achievement}}
+
+{% endfor %}
+
+
+\end{itemize}
+
+
+{% endif %}
+
+
+
+\end{document}

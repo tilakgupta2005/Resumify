@@ -1,6 +1,4 @@
-import json
-
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from schema.resume_schema import *
 from services.auth_service import *
