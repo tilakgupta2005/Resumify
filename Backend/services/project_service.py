@@ -7,7 +7,7 @@ from prompt.project_description_prompt import project_description_prompt
 class ProjectService:
 
     @staticmethod
-    def optimize(jd_summary, base_resume, user_id, jd_summary_embedding):
+    def optimize(jd_summary, user_id, jd_summary_embedding):
        result = supabase.rpc(
         "get_top_projects",
         {
