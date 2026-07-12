@@ -3,6 +3,7 @@ from core.config import llm
 from schema.generation_schema import projectdescription
 from prompt.project_description_prompt import project_description_prompt
 
+
 class ProjectService:
 
     @staticmethod
@@ -23,4 +24,4 @@ class ProjectService:
         for original, rewritten in zip(result.data, project_description.projects):
             original["description"] = rewritten.project_description
 
-        base_resume["projects"] = result.data
+        return result.data

@@ -47,7 +47,7 @@ def final_resume(jd_text: str, user_id: str):
                 n=n
             )
 
-    base_resume["projects"] = ProjectService.optimize(jd_summary, base_resume, user_id, jd_summary_embedding)
+    base_resume["projects"] = ProjectService.optimize(jd_summary, user_id, jd_summary_embedding)
 
     base_resume_no_personal_info = base_resume.copy()
     base_resume_no_personal_info.pop("personal_info", None)
