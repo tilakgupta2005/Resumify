@@ -14,16 +14,22 @@ def get_resume(user_id: str) -> dict:
         raise HTTPException(status_code=500, detail=f"Error retrieving resume: {str(e)}")
     
     
-def create_base_cv(user: str, resume_data: ResumeDetails) -> None:
-
+def _save_resume(user: dict, resume_data: ResumeDetails, action: str) -> None:
     try:
-        response = get_supabase_client().rpc(
-    "save_resume",
-    {
-        "p_user_id": user["user_id"],
-        "p_resume": resume_data.model_dump(mode="json")
-    }
-).execute()
-
+        get_supabase_client().rpc(
+            "save_resume",
+            {
+                "p_user_id": user["user_id"],
+                "p_resume": resume_data.model_dump(mode="json"),
+            },
+        ).execute()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error inserting personal info: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error {action} base resume: {str(e)}")
+
+
+def create_base_cv(user: dict, resume_data: ResumeDetails) -> None:
+    _save_resume(user, resume_data, action="creating")
+
+
+def update_base_cv(user: dict, resume_data: ResumeDetails) -> None:
+    _save_resume(user, resume_data, action="updating")

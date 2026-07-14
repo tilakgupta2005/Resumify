@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     # shutil.which('xelatex')" (see app/services/pdf_service.py).
     latex_executable_path: str = ""
 
+    frontend_base_url: str = ""
+
     # --- App metadata -----------------------------------------------------
     app_name: str = "Resumify API"
     cors_allow_origins: list[str] = ["*"]

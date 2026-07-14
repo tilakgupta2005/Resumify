@@ -1,6 +1,6 @@
 CREATE TABLE personal_info (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid() UNIQUE,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
     first_name VARCHAR(100),
     middle_name VARCHAR(100),
     last_name VARCHAR(100),

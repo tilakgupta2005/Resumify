@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from app.core.security import get_current_user
 from app.schema.resume_schema import ResumeDetails
-from app.services.resume_services import get_resume, create_base_cv
+from app.services.resume_services import get_resume, create_base_cv, update_base_cv
 
 
 router = APIRouter(prefix="/base_resume", tags=["base_resume"])
@@ -30,7 +30,7 @@ def create_base_resume(resume_details: ResumeDetails, user: dict = Depends(get_c
 @router.put("/update_base_resume")
 def update_base_resume(resume_details: ResumeDetails, user: dict = Depends(get_current_user)):
     try:
-        create_base_cv(user, resume_details)
+        update_base_cv(user, resume_details)
         return JSONResponse(content={"message": "Base resume updated successfully"}, status_code=200)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating base resume: {str(e)}")

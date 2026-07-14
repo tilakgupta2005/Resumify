@@ -18,7 +18,10 @@ class Name(BaseModel):
     
     @field_validator('middle_name')
     @classmethod
-    def validate_middle_name(cls, v: str) -> str:
+    def validate_middle_name(cls, v: Optional[str]) -> Optional[str]:
+        # middle_name is optional - only validate/format it when it's actually provided
+        if v is None:
+            return v
         if not re.match(r"^[a-zA-Z\s]+$", v):
             raise ValueError("Middle Name can only contain letters and spaces")
         return v.strip()
@@ -46,7 +49,10 @@ class Location(BaseModel):
 
     @field_validator("address")
     @classmethod
-    def validate_address(cls, v: str) -> str:
+    def validate_address(cls, v: Optional[str]) -> Optional[str]:
+        # address is optional - only validate/format it when it's actually provided
+        if v is None:
+            return v
         if not v.strip():
             raise ValueError("Address cannot be empty.")
         return v.strip()
@@ -197,15 +203,15 @@ class ResumeDetails(BaseModel):
         List[Certification], 
         Field(default=[], title="Certifications", description="List of certifications obtained", example=[{"title": "AWS Certified Solutions Architect", "issuing_organization": "Amazon Web Services", "issue_date": "2022-01-01", "skills": ["Cloud Architecture", "DevOps"]}])]
     technical_participation: Annotated[
-        Optional[List[str]], 
-        Field(None, max_length=500, title="Technical Participation", description="Description of technical participation in events, workshops, or competitions", example="Participated in Google Code Jam and Facebook Hacker Cup")]
+        List[str], 
+        Field(default=[], max_length=500, title="Technical Participation", description="List of technical participation entries (events, workshops, or competitions)", example=["Participated in Google Code Jam", "Participated in Facebook Hacker Cup"])]
     co_curricular: Annotated[
-        Optional[List[str]], 
-        Field(None, max_length=500, title="Co-Curricular Activities", description="Description of co-curricular activities", example="Member of the university coding club, participated in hackathons and coding competitions")]
+        List[str], 
+        Field(default=[], max_length=500, title="Co-Curricular Activities", description="List of co-curricular activities", example=["Member of the university coding club", "Participated in hackathons"])]
     extra_curricular: Annotated[
-        Optional[List[str]], 
-        Field(None, max_length=500, title="Extra Curricular Activities", description="Description of extra curricular activities", example="Captain of the university basketball team")]
+        List[str], 
+        Field(default=[], max_length=500, title="Extra Curricular Activities", description="List of extra curricular activities", example=["Captain of the university basketball team"])]
     achievements: Annotated[
-        Optional[List[str]], 
-        Field(None, max_length=500, title="Achievements", description="Description of achievements", example="Won first place in XYZ coding competition")]
+        List[str], 
+        Field(default=[], max_length=500, title="Achievements", description="List of achievements", example=["Won first place in XYZ coding competition"])]
 

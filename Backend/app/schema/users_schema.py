@@ -31,4 +31,26 @@ class LoginUser(BaseModel):
     Email: Annotated[EmailStr, Field(..., title="Email", description="The email address of the user", example="john.doe@example.com")]
     password: Annotated[str, Field(..., min_length=8, max_length=128, title="Password", description="The password of the user", example="P@ssw0rd!")]
 
-                                          
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    access_token: str
+    refresh_token: str
+    password: Annotated[str, Field(..., min_length=8, max_length=128, title="Password", description="The password of the user", example="P@ssw0rd!")]
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        """Validate password strength"""
+        if not re.search(r'[A-Z]', v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r'[a-z]', v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r'\d', v):
+            raise ValueError("Password must contain at least one digit")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
+            raise ValueError("Password must contain at least one special character")
+        return v

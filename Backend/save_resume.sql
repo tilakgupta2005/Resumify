@@ -36,11 +36,12 @@ BEGIN
         p_resume->'personal_info'->>'github',
         p_resume->'personal_info'->>'portfolio'
     )
-    ON CONFLICT (email)
+    ON CONFLICT (user_id)
     DO UPDATE SET
         first_name = EXCLUDED.first_name,
         middle_name = EXCLUDED.middle_name,
         last_name = EXCLUDED.last_name,
+        email = EXCLUDED.email,
         phone = EXCLUDED.phone,
         linkedin = EXCLUDED.linkedin,
         github = EXCLUDED.github,
@@ -83,14 +84,14 @@ BEGIN
         p_user_id,
         ARRAY(
             SELECT jsonb_array_elements_text(
-                p_resume->'skills'
+                COALESCE(p_resume->'skills', '[]'::jsonb)
             )
         )
     );
 
     -- Experience
     FOR exp IN
-        SELECT * FROM jsonb_array_elements(p_resume->'experience')
+        SELECT * FROM jsonb_array_elements(COALESCE(p_resume->'experience', '[]'::jsonb))
     LOOP
         INSERT INTO experience(
             user_id,
@@ -111,14 +112,14 @@ BEGIN
             (exp->>'start_date')::date,
             NULLIF(exp->>'end_date','')::date,
             ARRAY(
-                SELECT jsonb_array_elements_text(exp->'skills')
+                SELECT jsonb_array_elements_text(COALESCE(exp->'skills', '[]'::jsonb))
             )
         );
     END LOOP;
 
     -- Education
     FOR edu IN
-        SELECT * FROM jsonb_array_elements(p_resume->'education')
+        SELECT * FROM jsonb_array_elements(COALESCE(p_resume->'education', '[]'::jsonb))
     LOOP
         INSERT INTO education(
             user_id,
@@ -142,7 +143,7 @@ BEGIN
 
     -- Projects
     FOR proj IN
-        SELECT * FROM jsonb_array_elements(p_resume->'projects')
+        SELECT * FROM jsonb_array_elements(COALESCE(p_resume->'projects', '[]'::jsonb))
     LOOP
         INSERT INTO projects(
             user_id,
@@ -164,7 +165,7 @@ BEGIN
             proj->>'project_url',
             ARRAY(
                 SELECT jsonb_array_elements_text(
-                    proj->'technologies_used'
+                    COALESCE(proj->'technologies_used', '[]'::jsonb)
                 )
             ),
             proj->>'description',
@@ -174,7 +175,7 @@ BEGIN
 
     -- Certifications
     FOR cert IN
-        SELECT * FROM jsonb_array_elements(p_resume->'certifications')
+        SELECT * FROM jsonb_array_elements(COALESCE(p_resume->'certifications', '[]'::jsonb))
     LOOP
         INSERT INTO certifications(
             user_id,
@@ -190,7 +191,7 @@ BEGIN
             (cert->>'issue_date')::date,
             ARRAY(
                 SELECT jsonb_array_elements_text(
-                    cert->'skills'
+                    COALESCE(cert->'skills', '[]'::jsonb)
                 )
             )
         );
@@ -199,7 +200,7 @@ BEGIN
     -- Technical Participation
     FOR item IN
         SELECT jsonb_array_elements_text(
-            p_resume->'technical_participation'
+            COALESCE(p_resume->'technical_participation', '[]'::jsonb)
         )
     LOOP
         INSERT INTO technical_participation(
@@ -212,7 +213,7 @@ BEGIN
     -- Co-Curricular
     FOR item IN
         SELECT jsonb_array_elements_text(
-            p_resume->'co_curricular'
+            COALESCE(p_resume->'co_curricular', '[]'::jsonb)
         )
     LOOP
         INSERT INTO co_curricular(
@@ -225,7 +226,7 @@ BEGIN
     -- Extra-Curricular
     FOR item IN
         SELECT jsonb_array_elements_text(
-            p_resume->'extra_curricular'
+            COALESCE(p_resume->'extra_curricular', '[]'::jsonb)
         )
     LOOP
         INSERT INTO extra_curricular(
@@ -238,7 +239,7 @@ BEGIN
     -- Achievements
     FOR item IN
         SELECT jsonb_array_elements_text(
-            p_resume->'achievements'
+            COALESCE(p_resume->'achievements', '[]'::jsonb)
         )
     LOOP
         INSERT INTO achievements(
