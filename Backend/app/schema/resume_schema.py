@@ -1,7 +1,7 @@
 from datetime import date
 from pydantic import BaseModel, Field, EmailStr, field_validator, computed_field
 from typing import Annotated, Optional, List
-from utils.embedding_gen import get_embedding
+from app.utils.embedding_gen import get_embedding
 import re
 
 class Name(BaseModel):

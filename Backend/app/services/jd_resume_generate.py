@@ -1,23 +1,25 @@
 from langchain_core.output_parsers import StrOutputParser
-from services.experience_service import ExperienceService
-from utils.n_recent_item import get_recent_items
-from utils.embedding_gen import get_embedding
-from core.config import *
-from services.create_base_cv import get_resume
-from schema.generation_schema import ProfessionalSummary
-from utils.bm25_search import bm25_search
-from prompt.jd_summarize_prompt import jd_summarize_prompt
-from prompt.professional_summary_prompt import professional_summary_prompt
-from services.skill_service import SkillService
-from services.experience_service import ExperienceService
-from services.project_service import ProjectService
+from app.services.experience_service import ExperienceService
+from app.utils.n_recent_item import get_recent_items
+from app.utils.embedding_gen import get_embedding
+from app.core.ai_provider import llm
+from app.services.resume_services import get_resume
+from app.schema.generation_schema import ProfessionalSummary, JdSummary
+from app.utils.bm25_search import bm25_search
+from app.prompt.jd_summarize_prompt import jd_summarize_prompt
+from app.prompt.professional_summary_prompt import professional_summary_prompt
+from app.services.skill_service import SkillService
+from app.services.experience_service import ExperienceService
+from app.services.project_service import ProjectService
 
 
 def jd_resume_json(jd_text: str, user_id: str):
 
     print(f"Getting details for user:{user_id}")
+    jd_summary_llm = llm.with_structured_output(JdSummary)
 
-    jd_summary = (jd_summarize_prompt | llm | StrOutputParser()).invoke({"jd_text": jd_text})
+    jd_summary_result = (jd_summarize_prompt | jd_summary_llm).invoke({"jd_text": jd_text})
+    jd_summary = jd_summary_result.summary
 
     jd_summary_embedding = get_embedding(jd_summary)
     
@@ -61,4 +63,4 @@ def jd_resume_json(jd_text: str, user_id: str):
     base_resume["professional_summary"] = professional_summary.summary
 
     print(f"Successful user resume data reterival for user:{user_id}")
-    return base_resume
+    return base_resume, jd_summary_result.company

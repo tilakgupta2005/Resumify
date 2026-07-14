@@ -1,16 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
-from schema.resume_schema import *
-from services.auth_service import *
-from services.create_base_cv import *
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.core.security import get_current_user
+from app.schema.resume_schema import ResumeDetails
+from app.services.resume_services import get_resume, create_base_cv
+
 
 router = APIRouter(prefix="/base_resume", tags=["base_resume"])
 
-security = HTTPBearer()
 
 @router.get("/base_resume", response_model=ResumeDetails)
-def get_base_resume(user: str = Depends(authenticate_user), credentials: HTTPAuthorizationCredentials = Depends(security)):
+def get_base_resume(user: dict = Depends(get_current_user)):
     try:
         get_resume_data = get_resume(user.get("user_id"))
         return JSONResponse(
@@ -18,16 +17,18 @@ def get_base_resume(user: str = Depends(authenticate_user), credentials: HTTPAut
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving base resume: {str(e)}")
 
+
 @router.post("/create_base_resume")
-def create_base_resume(resume_details: ResumeDetails, user: str = Depends(authenticate_user), credentials: HTTPAuthorizationCredentials = Depends(security)):
+def create_base_resume(resume_details: ResumeDetails, user: dict = Depends(get_current_user)):
     try:
         create_base_cv(user, resume_details)
         return JSONResponse(content={"message": "Base resume created successfully"}, status_code=201)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error creating base resume: {str(e)}")    
 
+
 @router.put("/update_base_resume")
-def update_base_resume(resume_details: ResumeDetails, user: str = Depends(authenticate_user), credentials: HTTPAuthorizationCredentials = Depends(security)):
+def update_base_resume(resume_details: ResumeDetails, user: dict = Depends(get_current_user)):
     try:
         create_base_cv(user, resume_details)
         return JSONResponse(content={"message": "Base resume updated successfully"}, status_code=200)

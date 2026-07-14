@@ -1,4 +1,4 @@
-from utils.bm25_search import bm25_search
+from app.utils.bm25_search import bm25_search
 
 class SkillService:
     

@@ -1,7 +1,7 @@
-from prompt.experience_description_prompt import experience_description_prompt
-from utils.n_recent_item import get_recent_items
-from schema.generation_schema import experiencedescription
-from core.config import llm
+from app.prompt.experience_description_prompt import experience_description_prompt
+from app.utils.n_recent_item import get_recent_items
+from app.schema.generation_schema import experiencedescription
+from app.core.ai_provider import llm
 
 class ExperienceService:
 

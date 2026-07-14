@@ -35,7 +35,7 @@
 {{ personal_info.location.country }}
 
 \par
-\href{mailto:{{personal_info.email}}}{{personal_info.email}}
+\href{mailto:{{personal_info.email}}}{ {{personal_info.email}} }
 \quad|\quad
 {{personal_info.phone}}
 {% if personal_info.linkedin %}
@@ -132,7 +132,7 @@
 
 \par
 
-\href{ {{project.project_url}} }{{project.project_url}}
+\href{ {{project.project_url}} }{ {{project.project_url}} }
 
 {% endif %}
 

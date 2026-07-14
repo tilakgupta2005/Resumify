@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import List
-from langchain_core.output_parsers import PydanticOutputParser
 
 class Project(BaseModel):
     project_name: str
@@ -29,4 +28,9 @@ class ProfessionalSummary(BaseModel):
         max_length=600,
         description="ATS-friendly professional summary of 3-5 sentences."
     )
+
+class JdSummary(BaseModel):
+    company: str = Field(default="", description="Hiring company name, empty string if not mentioned")
+    summary: str = Field(..., max_length=1500, description="Dense ATS-friendly paragraph summarizing the JD")
+    
 

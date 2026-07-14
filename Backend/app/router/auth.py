@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
-from schema.users_schema import *
-from core.database import supabase
+from app.schema.users_schema import *
+from app.core.database import get_supabase_client
 
 router = APIRouter(prefix="/auth", tags=["auth"]) 
 
 @router.post("/signup")
 async def signup(user: CreateUser):
     try:
-        auth = supabase.auth.sign_up({
+        auth = get_supabase_client().auth.sign_up({
             "email": user.Email,
             "password": user.password,
             "options": {
@@ -24,7 +24,7 @@ async def signup(user: CreateUser):
 @router.post("/login")
 async def login(user: LoginUser):
     try:
-        response = supabase.auth.sign_in_with_password({
+        response = get_supabase_client().auth.sign_in_with_password({
             "email": user.Email,
             "password": user.password
         })

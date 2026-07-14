@@ -1,9 +1,11 @@
 from fastapi import HTTPException, Request
-from core.config import SUPABASE_URL
+from app.core.config import get_settings
 from jose import jwt
 import httpx
+0
+settings = get_settings()
 
-JWKS_URL = f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+JWKS_URL = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
 AUDIENCE = "authenticated"
 
 
