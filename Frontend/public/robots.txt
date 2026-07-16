@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /auth
+Disallow: /dashboard
+Disallow: /builder
+Disallow: /profile
+Disallow: /ai
+Disallow: /reset-password
+
+Sitemap: https://resumify.dev/sitemap.xml
