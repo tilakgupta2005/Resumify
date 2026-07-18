@@ -4,59 +4,85 @@ import type { Resume } from "./resume-schema";
 import { useAuthToken } from "./use-auth";
 import { emptyResume } from "./resume-schema";
 
+function formatToBackendDate(d: string | null | undefined): string | null {
+  if (!d) return null;
+  const trimmed = d.trim();
+  if (!trimmed) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  if (/^\d{4}-\d{2}$/.test(trimmed)) return `${trimmed}-01`;
+  return trimmed;
+}
+
+function formatFromBackendDate(d: string | null | undefined): string {
+  if (!d) return "";
+  const trimmed = d.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed.slice(0, 7);
+  return trimmed;
+}
+
 function toBackendResume(r: Resume) {
+  const hasLocation = !!(
+    r.personal_info.address?.trim() ||
+    r.personal_info.city?.trim() ||
+    r.personal_info.state?.trim() ||
+    r.personal_info.country?.trim() ||
+    r.personal_info.postal_code?.trim()
+  );
+
   return {
     personal_info: {
       name: {
-        first_name: r.personal_info.first_name,
-        middle_name: r.personal_info.middle_name || null,
-        last_name: r.personal_info.last_name,
+        first_name: r.personal_info.first_name.trim(),
+        middle_name: r.personal_info.middle_name?.trim() || null,
+        last_name: r.personal_info.last_name.trim(),
       },
-      email: r.personal_info.email,
-      phone: r.personal_info.phone,
-      location: {
-        address: r.personal_info.address || null,
-        city: r.personal_info.city,
-        state: r.personal_info.state,
-        country: r.personal_info.country,
-        postal_code: r.personal_info.postal_code,
-      },
-      linkedin: r.personal_info.linkedin || null,
-      github: r.personal_info.github || null,
-      portfolio: r.personal_info.portfolio || null,
+      email: r.personal_info.email.trim(),
+      phone: r.personal_info.phone.trim(),
+      location: hasLocation
+        ? {
+            address: r.personal_info.address?.trim() || null,
+            city: r.personal_info.city.trim(),
+            state: r.personal_info.state.trim(),
+            country: r.personal_info.country.trim(),
+            postal_code: r.personal_info.postal_code.trim(),
+          }
+        : null,
+      linkedin: r.personal_info.linkedin?.trim() || null,
+      github: r.personal_info.github?.trim() || null,
+      portfolio: r.personal_info.portfolio?.trim() || null,
     },
     skills: r.skills,
     experience: r.experience.map((e) => ({
-      company: e.company,
-      designation: e.designation,
+      company: e.company.trim(),
+      designation: e.designation.trim(),
       ctc: parseFloat(e.ctc) || 0,
-      location: e.location,
-      start_date: e.start_date || "2000-01-01",
-      end_date: e.end_date || null,
+      location: e.location.trim(),
+      start_date: formatToBackendDate(e.start_date) || "2000-01-01",
+      end_date: formatToBackendDate(e.end_date),
       skills: e.skills,
-      description: e.description || " ",
+      description: e.description.trim(),
     })),
     education: r.education.map((e) => ({
-      institution_name: e.institution,
-      degree: e.degree,
-      field_of_study: e.field_of_study,
-      start_date: e.start_date || "2000-01-01",
-      end_date: e.end_date || null,
-      grade: e.grade || null,
+      institution_name: e.institution.trim(),
+      degree: e.degree.trim(),
+      field_of_study: e.field_of_study.trim(),
+      start_date: formatToBackendDate(e.start_date) || "2000-01-01",
+      end_date: formatToBackendDate(e.end_date),
+      grade: e.grade?.trim() || null,
     })),
     projects: r.projects.map((p) => ({
-      project_name: p.project_name,
-      team_size: parseInt(p.team_size) || 1,
-      start_date: p.start_date || "2000-01-01",
-      end_date: p.end_date || null,
-      project_url: p.project_url || "https://github.com",
+      project_name: p.project_name.trim(),
+      team_size: parseInt(p.team_size, 10) || 1,
+      start_date: formatToBackendDate(p.start_date) || "2000-01-01",
+      end_date: formatToBackendDate(p.end_date),
+      project_url: p.project_url.trim(),
       technologies_used: p.technologies,
-      description: p.description || " ",
+      description: p.description.trim(),
     })),
     certifications: r.certifications.map((c) => ({
-      title: c.title,
-      issuing_organization: c.issuer,
-      issue_date: c.issue_date || null,
+      title: c.title.trim(),
+      issuing_organization: c.issuer?.trim() || null,
+      issue_date: formatToBackendDate(c.issue_date),
       skills: c.skills,
     })),
     technical_participation: r.technical_participation.map(
@@ -144,8 +170,8 @@ function fromBackendResume(payload: any): Resume {
             designation: e?.designation || "",
             ctc: e?.ctc ? e.ctc.toString() : "",
             location: e?.location || "",
-            start_date: e?.start_date || "",
-            end_date: e?.end_date || "",
+            start_date: formatFromBackendDate(e?.start_date),
+            end_date: formatFromBackendDate(e?.end_date),
             description: e?.description || "",
             skills: Array.isArray(e?.skills) ? e.skills : [],
           }))
@@ -155,8 +181,8 @@ function fromBackendResume(payload: any): Resume {
             institution: e?.institution_name || "",
             degree: e?.degree || "",
             field_of_study: e?.field_of_study || "",
-            start_date: e?.start_date || "",
-            end_date: e?.end_date || "",
+            start_date: formatFromBackendDate(e?.start_date),
+            end_date: formatFromBackendDate(e?.end_date),
             grade: e?.grade || "",
           }))
         : [],
@@ -169,15 +195,15 @@ function fromBackendResume(payload: any): Resume {
               ? p.technologies_used
               : [],
             description: p?.description || "",
-            start_date: p?.start_date || "",
-            end_date: p?.end_date || "",
+            start_date: formatFromBackendDate(p?.start_date),
+            end_date: formatFromBackendDate(p?.end_date),
           }))
         : [],
       certifications: Array.isArray(b.certifications)
         ? b.certifications.map((c: any) => ({
             title: c?.title || "",
             issuer: c?.issuing_organization || "",
-            issue_date: c?.issue_date || "",
+            issue_date: formatFromBackendDate(c?.issue_date),
             skills: Array.isArray(c?.skills) ? c.skills : [],
           }))
         : [],

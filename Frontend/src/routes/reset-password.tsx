@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Sparkles, Eye, EyeOff } from "lucide-react";
+import { Sparkles, Eye, EyeOff, FileText } from "lucide-react";
 import { PillButton } from "@/components/ui-kit";
 import { apiErrorMessage } from "@/lib/api";
 import { useResetPassword } from "@/lib/queries";
@@ -100,11 +100,13 @@ function ResetPasswordPage() {
     <div className="min-h-screen grid lg:grid-cols-2 bg-background">
       {/* Left brand panel */}
       <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-2xl bg-primary grid place-items-center">
-            <Sparkles className="h-4 w-4" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-primary grid place-items-center shadow-soft">
+            <FileText className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-xl">Resumify</span>
+          <span className="font-display font-bold text-xl tracking-tight">
+            Resumify
+          </span>
         </div>
         <motion.div
           initial={{ opacity: 0, y: 12 }}

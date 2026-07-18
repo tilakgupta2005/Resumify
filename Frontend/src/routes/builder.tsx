@@ -29,6 +29,7 @@ import {
 } from "@/lib/queries";
 import { emptyResume, resumeSchema, type Resume } from "@/lib/resume-schema";
 import { cn } from "@/lib/utils";
+import { MonthYearPicker } from "@/components/month-year-picker";
 
 import { z } from "zod";
 
@@ -112,14 +113,62 @@ function BuilderPage() {
     }
   }, [data, isLoading, methods]);
 
-  const submit = async (finish = false) => {
-    const values = methods.getValues();
+  const submit = async (values: Resume, finish = false) => {
     try {
       await save.mutateAsync({ resume: values, exists });
       toast.success(finish ? "Resume saved!" : "Draft saved");
     } catch (err) {
       toast.error(apiErrorMessage(err, "Could not save"));
     }
+  };
+
+  const getStepForErrorPath = (path: string): number => {
+    if (path.startsWith("personal_info")) return 0;
+    if (path.startsWith("skills")) return 1;
+    if (path.startsWith("experience")) return 2;
+    if (path.startsWith("education")) return 3;
+    if (path.startsWith("projects")) return 4;
+    if (path.startsWith("certifications")) return 5;
+    if (path.startsWith("achievements")) return 6;
+    if (path.startsWith("technical_participation")) return 7;
+    if (path.startsWith("co_curricular")) return 8;
+    if (path.startsWith("extra_curricular")) return 9;
+    return 0;
+  };
+
+  const onInvalid = (errors: any) => {
+    console.log("Validation errors:", errors);
+    const firstErrorKey = Object.keys(errors)[0];
+    if (firstErrorKey) {
+      const errorStep = getStepForErrorPath(firstErrorKey);
+      setStep(errorStep);
+      toast.error(`Please correct the errors in the ${STEPS[errorStep]} section.`);
+    }
+  };
+
+  const handleNext = async () => {
+    const stepFields: Record<number, any> = {
+      0: "personal_info",
+      1: "skills",
+      2: "experience",
+      3: "education",
+      4: "projects",
+      5: "certifications",
+      6: "achievements",
+      7: "technical_participation",
+      8: "co_curricular",
+      9: "extra_curricular",
+    };
+
+    const fieldToValidate = stepFields[step];
+    if (fieldToValidate) {
+      const isValid = await methods.trigger(fieldToValidate);
+      if (!isValid) {
+        toast.error("Please correct the errors in this section before proceeding.");
+        return;
+      }
+    }
+    setStep((s) => Math.min(STEPS.length - 1, s + 1));
   };
 
   return (
@@ -142,10 +191,7 @@ function BuilderPage() {
 
           <FormProvider {...methods}>
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                submit(true);
-              }}
+              onSubmit={methods.handleSubmit((values) => submit(values, true), onInvalid)}
             >
               <Card className="!p-4 sm:!p-6 md:!p-8">
                 <AnimatePresence mode="wait">
@@ -179,7 +225,7 @@ function BuilderPage() {
                     <PillButton
                       type="button"
                       variant="secondary"
-                      onClick={() => submit(false)}
+                      onClick={() => methods.handleSubmit((values) => submit(values, false), onInvalid)()}
                       disabled={save.isPending}
                     >
                       <Save className="h-4 w-4" /> Save draft
@@ -187,7 +233,7 @@ function BuilderPage() {
                     {step < STEPS.length - 1 ? (
                       <PillButton
                         type="button"
-                        onClick={() => setStep((s) => s + 1)}
+                        onClick={handleNext}
                       >
                         Next <ChevronRight className="h-4 w-4" />
                       </PillButton>
@@ -606,7 +652,7 @@ function RepeatableSection<
 }
 
 function ExperienceStep() {
-  const { register, control } = useFormContext<Resume>();
+  const { register, control, formState: { errors } } = useFormContext<Resume>();
   return (
     <RepeatableSection
       name="experience"
@@ -623,66 +669,82 @@ function ExperienceStep() {
         description: "",
         skills: [],
       }}
-      renderItem={(i) => (
-        <div className="grid lg:grid-cols-2 gap-4">
-          <Field label="Company">
-            <input
-              className={inputCls}
-              {...register(`experience.${i}.company`)}
-            />
-          </Field>
-          <Field label="Designation">
-            <input
-              className={inputCls}
-              {...register(`experience.${i}.designation`)}
-            />
-          </Field>
-          <Field label="CTC">
-            <input className={inputCls} {...register(`experience.${i}.ctc`)} />
-          </Field>
-          <Field label="Location">
-            <input
-              className={inputCls}
-              {...register(`experience.${i}.location`)}
-            />
-          </Field>
-          <Field label="Start date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`experience.${i}.start_date`)}
-            />
-          </Field>
-          <Field label="End date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`experience.${i}.end_date`)}
-            />
-          </Field>
-          <Field label="Description" className="lg:col-span-2">
-            <textarea
-              className={textareaCls}
-              {...register(`experience.${i}.description`)}
-            />
-          </Field>
-          <Field label="Skills used" className="lg:col-span-2">
-            <Controller
-              control={control}
-              name={`experience.${i}.skills`}
-              render={({ field }) => (
-                <TagsInput value={field.value} onChange={field.onChange} />
-              )}
-            />
-          </Field>
-        </div>
-      )}
+      renderItem={(i) => {
+        const e = (errors.experience as any)?.[i];
+        return (
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Field label="Company" error={e?.company?.message}>
+              <input
+                className={inputCls}
+                {...register(`experience.${i}.company`)}
+              />
+            </Field>
+            <Field label="Designation" error={e?.designation?.message}>
+              <input
+                className={inputCls}
+                {...register(`experience.${i}.designation`)}
+              />
+            </Field>
+            <Field label="CTC" error={e?.ctc?.message}>
+              <input className={inputCls} {...register(`experience.${i}.ctc`)} />
+            </Field>
+            <Field label="Location" error={e?.location?.message}>
+              <input
+                className={inputCls}
+                {...register(`experience.${i}.location`)}
+              />
+            </Field>
+            <Field label="Start date" error={e?.start_date?.message}>
+              <Controller
+                control={control}
+                name={`experience.${i}.start_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={e?.start_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="End date" error={e?.end_date?.message}>
+              <Controller
+                control={control}
+                name={`experience.${i}.end_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    showPresent={true}
+                    error={e?.end_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="Description" error={e?.description?.message} className="lg:col-span-2">
+              <textarea
+                className={textareaCls}
+                {...register(`experience.${i}.description`)}
+              />
+            </Field>
+            <Field label="Skills used" error={e?.skills?.message} className="lg:col-span-2">
+              <Controller
+                control={control}
+                name={`experience.${i}.skills`}
+                render={({ field }) => (
+                  <TagsInput value={field.value} onChange={field.onChange} />
+                )}
+              />
+            </Field>
+          </div>
+        );
+      }}
     />
   );
 }
 
 function EducationStep() {
-  const { register } = useFormContext<Resume>();
+  const { register, control, formState: { errors } } = useFormContext<Resume>();
   return (
     <RepeatableSection
       name="education"
@@ -696,51 +758,67 @@ function EducationStep() {
         end_date: "",
         grade: "",
       }}
-      renderItem={(i) => (
-        <div className="grid lg:grid-cols-2 gap-4">
-          <Field label="Institution" className="lg:col-span-2">
-            <input
-              className={inputCls}
-              {...register(`education.${i}.institution`)}
-            />
-          </Field>
-          <Field label="Degree">
-            <input
-              className={inputCls}
-              {...register(`education.${i}.degree`)}
-            />
-          </Field>
-          <Field label="Field of study">
-            <input
-              className={inputCls}
-              {...register(`education.${i}.field_of_study`)}
-            />
-          </Field>
-          <Field label="Start date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`education.${i}.start_date`)}
-            />
-          </Field>
-          <Field label="End date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`education.${i}.end_date`)}
-            />
-          </Field>
-          <Field label="Grade / GPA" className="lg:col-span-2">
-            <input className={inputCls} {...register(`education.${i}.grade`)} />
-          </Field>
-        </div>
-      )}
+      renderItem={(i) => {
+        const e = (errors.education as any)?.[i];
+        return (
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Field label="Institution" error={e?.institution?.message} className="lg:col-span-2">
+              <input
+                className={inputCls}
+                {...register(`education.${i}.institution`)}
+              />
+            </Field>
+            <Field label="Degree" error={e?.degree?.message}>
+              <input
+                className={inputCls}
+                {...register(`education.${i}.degree`)}
+              />
+            </Field>
+            <Field label="Field of study" error={e?.field_of_study?.message}>
+              <input
+                className={inputCls}
+                {...register(`education.${i}.field_of_study`)}
+              />
+            </Field>
+            <Field label="Start date" error={e?.start_date?.message}>
+              <Controller
+                control={control}
+                name={`education.${i}.start_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={e?.start_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="End date" error={e?.end_date?.message}>
+              <Controller
+                control={control}
+                name={`education.${i}.end_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    showPresent={true}
+                    error={e?.end_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="Grade / GPA" error={e?.grade?.message} className="lg:col-span-2">
+              <input className={inputCls} {...register(`education.${i}.grade`)} />
+            </Field>
+          </div>
+        );
+      }}
     />
   );
 }
 
 function ProjectsStep() {
-  const { register, control } = useFormContext<Resume>();
+  const { register, control, formState: { errors } } = useFormContext<Resume>();
   return (
     <RepeatableSection
       name="projects"
@@ -755,102 +833,127 @@ function ProjectsStep() {
         start_date: "",
         end_date: "",
       }}
-      renderItem={(i) => (
-        <div className="grid lg:grid-cols-2 gap-4">
-          <Field label="Project name">
-            <input
-              className={inputCls}
-              {...register(`projects.${i}.project_name`)}
-            />
-          </Field>
-          <Field label="Team size">
-            <input
-              className={inputCls}
-              {...register(`projects.${i}.team_size`)}
-            />
-          </Field>
-          <Field label="Project URL" className="lg:col-span-2">
-            <input
-              className={inputCls}
-              placeholder="https://…"
-              {...register(`projects.${i}.project_url`)}
-            />
-          </Field>
-          <Field label="Start date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`projects.${i}.start_date`)}
-            />
-          </Field>
-          <Field label="End date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`projects.${i}.end_date`)}
-            />
-          </Field>
-          <Field label="Description" className="lg:col-span-2">
-            <textarea
-              className={textareaCls}
-              {...register(`projects.${i}.description`)}
-            />
-          </Field>
-          <Field label="Technologies" className="lg:col-span-2">
-            <Controller
-              control={control}
-              name={`projects.${i}.technologies`}
-              render={({ field }) => (
-                <TagsInput value={field.value} onChange={field.onChange} />
-              )}
-            />
-          </Field>
-        </div>
-      )}
+      renderItem={(i) => {
+        const e = (errors.projects as any)?.[i];
+        return (
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Field label="Project name" error={e?.project_name?.message}>
+              <input
+                className={inputCls}
+                {...register(`projects.${i}.project_name`)}
+              />
+            </Field>
+            <Field label="Team size" error={e?.team_size?.message}>
+              <input
+                className={inputCls}
+                {...register(`projects.${i}.team_size`)}
+              />
+            </Field>
+            <Field label="Project URL" error={e?.project_url?.message} className="lg:col-span-2">
+              <input
+                className={inputCls}
+                placeholder="https://…"
+                {...register(`projects.${i}.project_url`)}
+              />
+            </Field>
+            <Field label="Start date" error={e?.start_date?.message}>
+              <Controller
+                control={control}
+                name={`projects.${i}.start_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={e?.start_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="End date" error={e?.end_date?.message}>
+              <Controller
+                control={control}
+                name={`projects.${i}.end_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    showPresent={true}
+                    error={e?.end_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="Description" error={e?.description?.message} className="lg:col-span-2">
+              <textarea
+                className={textareaCls}
+                {...register(`projects.${i}.description`)}
+              />
+            </Field>
+            <Field label="Technologies" error={e?.technologies?.message} className="lg:col-span-2">
+              <Controller
+                control={control}
+                name={`projects.${i}.technologies`}
+                render={({ field }) => (
+                  <TagsInput value={field.value} onChange={field.onChange} />
+                )}
+              />
+            </Field>
+          </div>
+        );
+      }}
     />
   );
 }
 
 function CertificationsStep() {
-  const { register, control } = useFormContext<Resume>();
+  const { register, control, formState: { errors } } = useFormContext<Resume>();
   return (
     <RepeatableSection
       name="certifications"
       heading="Certifications"
       itemLabel={(i) => `Certification #${i + 1}`}
       defaultItem={{ title: "", issuer: "", issue_date: "", skills: [] }}
-      renderItem={(i) => (
-        <div className="grid lg:grid-cols-2 gap-4">
-          <Field label="Title">
-            <input
-              className={inputCls}
-              {...register(`certifications.${i}.title`)}
-            />
-          </Field>
-          <Field label="Issuer">
-            <input
-              className={inputCls}
-              {...register(`certifications.${i}.issuer`)}
-            />
-          </Field>
-          <Field label="Issue date">
-            <input
-              type="month"
-              className={inputCls}
-              {...register(`certifications.${i}.issue_date`)}
-            />
-          </Field>
-          <Field label="Skills" className="lg:col-span-2">
-            <Controller
-              control={control}
-              name={`certifications.${i}.skills`}
-              render={({ field }) => (
-                <TagsInput value={field.value} onChange={field.onChange} />
-              )}
-            />
-          </Field>
-        </div>
-      )}
+      renderItem={(i) => {
+        const e = (errors.certifications as any)?.[i];
+        return (
+          <div className="grid lg:grid-cols-2 gap-4">
+            <Field label="Title" error={e?.title?.message}>
+              <input
+                className={inputCls}
+                {...register(`certifications.${i}.title`)}
+              />
+            </Field>
+            <Field label="Issuer" error={e?.issuer?.message}>
+              <input
+                className={inputCls}
+                {...register(`certifications.${i}.issuer`)}
+              />
+            </Field>
+            <Field label="Issue date" error={e?.issue_date?.message}>
+              <Controller
+                control={control}
+                name={`certifications.${i}.issue_date`}
+                render={({ field }) => (
+                  <MonthYearPicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={e?.issue_date?.message}
+                  />
+                )}
+              />
+            </Field>
+            <Field label="Skills" error={e?.skills?.message} className="lg:col-span-2">
+              <Controller
+                control={control}
+                name={`certifications.${i}.skills`}
+                render={({ field }) => (
+                  <TagsInput value={field.value} onChange={field.onChange} />
+                )}
+              />
+            </Field>
+          </div>
+        );
+      }}
     />
   );
 }
@@ -868,8 +971,9 @@ function ListStep({
   heading: string;
   desc?: string;
 }) {
-  const { control, register } = useFormContext<Resume>();
+  const { control, register, formState: { errors } } = useFormContext<Resume>();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const listErrors = errors[name] as any;
   return (
     <div>
       <StepHeader title={heading} desc={desc} />
@@ -880,28 +984,35 @@ function ListStep({
           </div>
         )}
         {fields.map((f, i) => (
-          <div key={f.id} className="flex items-center gap-2 mb-3">
-            <input
-              className={cn(inputCls, "flex-1")}
-              placeholder={
-                name === "achievements"
-                  ? "Achievement (e.g. Won first place in XYZ coding competition)"
-                  : name === "technical_participation"
-                    ? "Participation (e.g. Attended AWS re:Invent)"
-                    : name === "co_curricular"
-                      ? "Activity (e.g. Member of the university coding club)"
-                      : "Activity (e.g. Captain of the university basketball team)"
-              }
-              {...register(`${name}.${i}.title` as const)}
-            />
-            <button
-              type="button"
-              onClick={() => remove(i)}
-              className="h-11 w-11 rounded-2xl grid place-items-center hover:bg-danger/10 text-destructive border border-transparent hover:border-danger/20 transition shrink-0"
-              aria-label="Remove"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+          <div key={f.id} className="mb-3">
+            <div className="flex items-center gap-2">
+              <input
+                className={cn(inputCls, "flex-1")}
+                placeholder={
+                  name === "achievements"
+                    ? "Achievement (e.g. Won first place in XYZ coding competition)"
+                    : name === "technical_participation"
+                      ? "Participation (e.g. Attended AWS re:Invent)"
+                      : name === "co_curricular"
+                        ? "Activity (e.g. Member of the university coding club)"
+                        : "Activity (e.g. Captain of the university basketball team)"
+                }
+                {...register(`${name}.${i}.title` as const)}
+              />
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="h-11 w-11 rounded-2xl grid place-items-center hover:bg-danger/10 text-destructive border border-transparent hover:border-danger/20 transition shrink-0"
+                aria-label="Remove"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+            {listErrors?.[i]?.title?.message && (
+              <div className="text-xs text-destructive mt-1">
+                {listErrors[i].title.message}
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -10,6 +10,7 @@ import {
   X,
   Sun,
   Moon,
+  FileText,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { clearAuth } from "@/lib/api";
@@ -127,8 +128,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Menu className="h-5 w-5" />
               </button>
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-primary grid place-items-center flex-shrink-0">
-                  <Sparkles className="h-4 w-4 text-primary-foreground" />
+                <div className="h-9 w-9 rounded-xl bg-primary grid place-items-center shadow-soft flex-shrink-0">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <span className="font-display font-bold text-base tracking-tight">
                   Resumify
@@ -198,8 +199,8 @@ function SidebarInner({
   return (
     <>
       <div className="h-16 flex items-center gap-2 px-6 border-b border-border">
-        <div className="h-8 w-8 rounded-xl bg-primary grid place-items-center">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
+        <div className="h-9 w-9 rounded-xl bg-primary grid place-items-center shadow-soft flex-shrink-0">
+          <FileText className="h-5 w-5 text-primary-foreground" />
         </div>
         <span className="font-display font-bold text-xl tracking-tight">
           Resumify

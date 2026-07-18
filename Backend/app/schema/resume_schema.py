@@ -6,7 +6,7 @@ import re
 
 class Name(BaseModel):
     first_name: Annotated[str, Field(..., min_length=3, max_length=50, title="First Name", description="The First Name of the user", example="John")]
-    middle_name: Annotated[Optional[str], Field(None, min_length=3, max_length=50, title="Middle Name", description="The Middle Name of the user", example="Michael")]
+    middle_name: Annotated[Optional[str], Field(None, min_length=1, max_length=50, title="Middle Name", description="The Middle Name of the user", example="Michael")]
     last_name: Annotated[str, Field(..., min_length=3, max_length=100, title="Last Name", description="The Last Name of the user", example="Doe")]
 
     @field_validator('first_name')
@@ -69,7 +69,7 @@ class PersonalInfo(BaseModel):
     name: Annotated[Name, Field(..., title="Full Name", description="The Full Name of the user", example={"first_name": "John", "middle_name": "Michael", "last_name": "Doe"})] 
     email: Annotated[EmailStr, Field(..., title="Email", description="The Contact Email address of the user", example="john.doe@example.com")]
     phone: Annotated[str, Field(..., title="Phone Number", description="Phone Number of the user", example="+1234567890")]
-    location: Annotated[Location, Field(..., title="Location", description="Location of the User", example={"address": "456 Oak Avenue", "city": "Los Angeles", "state": "CA", "country": "USA", "postal_code": "90210"})]
+    location: Annotated[Optional[Location], Field(None, title="Location", description="Location of the User", example={"address": "456 Oak Avenue", "city": "Los Angeles", "state": "CA", "country": "USA", "postal_code": "90210"})]
     linkedin: Annotated[Optional[str], Field(None, title="LinkedIN", description="Linkedin URL of User", example="https://www.linkedin.com/in/username")]
     github: Annotated[Optional[str], Field(None, title="Github", description="Github URL of User",example="https://github.com/username")]
     portfolio: Annotated[Optional[str], Field(None, title="Portfolio", description="Portfolio URL of User", example="https://www.username.com")]
