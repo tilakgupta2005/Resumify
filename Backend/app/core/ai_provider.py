@@ -4,15 +4,21 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from app.core.exceptions import InvalidGoogleApiKeyError, GoogleApiQuotaError
 from google.genai.errors import ClientError, ServerError
 import re
+from langchain_google_genai.chat_models import ChatGoogleGenerativeAIError
+
 
 class SafeChatGoogleGenerativeAI(ChatGoogleGenerativeAI):
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
         try:
             return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
-        except ClientError as e:
+        except (ClientError, ChatGoogleGenerativeAIError, ServerError) as e:
             msg = str(e)
+
             if "API_KEY_INVALID" in msg or "API key not valid" in msg:
-                raise InvalidGoogleApiKeyError("Your Google API key was rejected. Please check it and try again.") from e
+                raise InvalidGoogleApiKeyError(
+                    "Your Google API key was rejected. Please check it and try again."
+                ) from e
+
             if "RESOURCE_EXHAUSTED" in msg or "429" in msg:
                 retry_after = None
                 match = re.search(r'"retryDelay":\s*"(\d+)s"', msg)
@@ -25,6 +31,7 @@ class SafeChatGoogleGenerativeAI(ChatGoogleGenerativeAI):
                     "Your Google API key hit its rate limit. Please try again shortly."
                 )
                 raise GoogleApiQuotaError(friendly, retry_after_seconds=retry_after) from e
+
             raise
         except ServerError as e:
             raise GoogleApiQuotaError("Google's API is temporarily unavailable. Please try again shortly.") from e

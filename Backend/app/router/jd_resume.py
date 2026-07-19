@@ -22,5 +22,5 @@ async def generate_resume(jd_text: str, background_tasks: BackgroundTasks, llm=D
 
 @router.post("/validate_key")
 async def validate_key(llm = Depends(get_user_llm)):
-    llm.invoke("ping", max_tokens=5)
+    llm.invoke("ping", max_output_tokens=5)
     return {"valid": True}
