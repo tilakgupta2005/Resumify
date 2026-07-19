@@ -18,11 +18,12 @@ jobs:
 
       - name: Build and push image via ACR
         run: |
+          cd Backend
           az acr build \
             --registry resumifyacr2026 \
             --image resumify-backend:v1 \
             --file Dockerfile \
-            Backend
+            .
 
       - name: Restart App Service to pull new image
         run: |
