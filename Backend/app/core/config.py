@@ -35,7 +35,10 @@ class Settings(BaseSettings):
 
     # --- App metadata -----------------------------------------------------
     app_name: str = "Resumify API"
-    cors_allow_origins: list[str] = ["*"]
+    cors_allow_origins: str = ""
+    @property
+    def cors_origins_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
 
 
 @lru_cache

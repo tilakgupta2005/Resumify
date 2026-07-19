@@ -1,8 +1,6 @@
-from langchain_core.output_parsers import StrOutputParser
 from app.services.experience_service import ExperienceService
 from app.utils.n_recent_item import get_recent_items
 from app.utils.embedding_gen import get_embedding
-from app.core.ai_provider import llm
 from app.services.resume_services import get_resume
 from app.schema.generation_schema import ProfessionalSummary, JdSummary
 from app.utils.bm25_search import bm25_search
@@ -13,7 +11,7 @@ from app.services.experience_service import ExperienceService
 from app.services.project_service import ProjectService
 
 
-def jd_resume_json(jd_text: str, user_id: str):
+def jd_resume_json(jd_text: str, user_id: str, llm):
 
     print(f"Getting details for user:{user_id}")
     jd_summary_llm = llm.with_structured_output(JdSummary)
@@ -27,7 +25,7 @@ def jd_resume_json(jd_text: str, user_id: str):
    
     base_resume["skills"] = SkillService.optimize(jd_summary, base_resume)
 
-    base_resume["experience"] = ExperienceService.optimize(jd_summary, base_resume)
+    base_resume["experience"] = ExperienceService.optimize(jd_summary, base_resume, llm)
 
     base_resume["education"] = get_recent_items(base_resume["education"], n=2)
 
@@ -51,7 +49,7 @@ def jd_resume_json(jd_text: str, user_id: str):
                 n=n
             )
 
-    base_resume["projects"] = ProjectService.optimize(jd_summary, user_id, jd_summary_embedding)
+    base_resume["projects"] = ProjectService.optimize(jd_summary, user_id, jd_summary_embedding, llm)
 
     base_resume_no_personal_info = base_resume.copy()
     base_resume_no_personal_info.pop("personal_info", None)

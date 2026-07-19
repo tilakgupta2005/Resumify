@@ -1,5 +1,4 @@
 from app.core.database import get_supabase_client
-from app.core.ai_provider import llm
 from app.schema.generation_schema import projectdescription
 from app.prompt.project_description_prompt import project_description_prompt
 from app.utils.n_recent_item import get_recent_items
@@ -8,7 +7,7 @@ from app.utils.n_recent_item import get_recent_items
 class ProjectService:
 
     @staticmethod
-    def optimize(jd_summary, user_id, jd_summary_embedding):
+    def optimize(jd_summary, user_id, jd_summary_embedding, llm):
        result = get_supabase_client().rpc(
         "get_top_projects",
         {

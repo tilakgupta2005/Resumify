@@ -6,6 +6,7 @@ import os
 
 from jinja2 import Environment, FileSystemLoader
 from app.core.config import get_settings
+from app.core.exceptions import PdfCompilationError
 
 
 # -----------------------------
@@ -146,9 +147,7 @@ def compile_pdf(
 
 
     if not generated_pdf.exists():
-        print(result.stdout)
-        print(result.stderr)
-        raise Exception("PDF generation failed")
+        raise PdfCompilationError(f"PDF generation failed: {result.stderr.strip() or result.stdout.strip()}")
 
 
     final_pdf = output_folder / pdf_name
