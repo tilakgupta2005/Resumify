@@ -121,7 +121,7 @@ export function getResumeWithUserFallback(): Resume {
             : "";
           resume.personal_info.last_name = parts
             .slice(1)
-            .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+            .map((p: string) => p.charAt(0).toUpperCase() + p.slice(1))
             .join(" ");
         }
         resume.personal_info.email = email;
@@ -409,3 +409,17 @@ export function useResetPassword() {
     },
   });
 }
+
+export function useValidateKey() {
+  return useMutation({
+    mutationFn: async (key: string) => {
+      const { data } = await api.post("/jd_resume/validate_key", null, {
+        headers: {
+          "X-Google-Api-Key": key,
+        },
+      });
+      return data as { valid: boolean };
+    },
+  });
+}
+

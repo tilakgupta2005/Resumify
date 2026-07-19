@@ -9,9 +9,17 @@ import {
   MapPin,
   Pencil,
   Phone,
+  Key,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Trash2,
 } from "lucide-react";
-import { useBaseResume, getResumeWithUserFallback } from "@/lib/queries";
+import { useBaseResume, getResumeWithUserFallback, useValidateKey } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { getStoredLlmKey, setStoredLlmKey, removeStoredLlmKey, apiErrorMessage } from "@/lib/api";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -41,6 +49,19 @@ function ProfilePage() {
     displayName.length > 12
       ? "text-xl sm:text-2xl md:text-3xl"
       : "text-2xl md:text-3xl";
+
+  const [llmKey, setLlmKey] = useState<string>("");
+  const [isKeySaved, setIsKeySaved] = useState<boolean>(false);
+  const [showKey, setShowKey] = useState<boolean>(false);
+  const validateKey = useValidateKey();
+
+  useEffect(() => {
+    const stored = getStoredLlmKey();
+    if (stored) {
+      setIsKeySaved(true);
+      setLlmKey(stored);
+    }
+  }, []);
 
   return (
     <AppLayout>
@@ -107,6 +128,134 @@ function ProfilePage() {
               v={pi.portfolio}
             />
           </div>
+        </Card>
+
+        {/* LLM Key Management */}
+        <Card className="!p-6 w-full relative overflow-hidden">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-9 w-9 rounded-2xl bg-primary/10 grid place-items-center text-primary shrink-0">
+              <Key className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold">Gemini API Key</h2>
+              <p className="text-xs text-muted-foreground mb-3">
+                Required for AI-powered resume generation. This key is stored securely in your browser's local storage and is never saved to our servers.
+              </p>
+              <div className="bg-muted/40 border border-border/50 rounded-2xl p-4 text-xs space-y-2 mb-2 max-w-md">
+                <div className="font-semibold text-foreground">How to get your free key:</div>
+                <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                  <li>
+                    Open{" "}
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Google AI Studio
+                    </a>
+                  </li>
+                  <li>Sign in with your Google account</li>
+                  <li>Click <strong className="text-foreground">Create API key</strong> in the sidebar</li>
+                  <li>Copy the key and paste it below</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          {isKeySaved ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/40 border border-border/60">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-8 w-8 rounded-xl bg-success/10 text-success grid place-items-center shrink-0">
+                  <CheckCircle className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-semibold text-foreground">API Key Active</div>
+                  <div className="text-xs font-mono text-muted-foreground truncate">
+                    {showKey ? llmKey : "••••••••••••••••••••••••••••••••"}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 self-end sm:self-center shrink-0">
+                <PillButton
+                  variant="ghost"
+                  onClick={() => setShowKey(!showKey)}
+                  className="!h-9 !px-3 text-xs"
+                >
+                  {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  {showKey ? "Hide" : "Show"}
+                </PillButton>
+                <PillButton
+                  variant="ghost"
+                  onClick={() => {
+                    removeStoredLlmKey();
+                    setIsKeySaved(false);
+                    setLlmKey("");
+                    setShowKey(false);
+                    toast.success("API Key removed");
+                  }}
+                  className="!h-9 !px-3 text-xs text-danger hover:text-danger-foreground hover:bg-danger"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Remove
+                </PillButton>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="relative flex items-center">
+                <input
+                  type={showKey ? "text" : "password"}
+                  value={llmKey}
+                  onChange={(e) => setLlmKey(e.target.value)}
+                  placeholder="Enter your Gemini API key (AIzaSy...)"
+                  className="w-full h-11 pl-4 pr-12 rounded-2xl bg-muted/60 focus:bg-card border border-transparent focus:border-border outline-none text-sm transition font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(!showKey)}
+                  className="absolute right-4 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                >
+                  {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <PillButton
+                  onClick={async () => {
+                    if (!llmKey.trim()) {
+                      toast.error("Please enter a key first.");
+                      return;
+                    }
+                    try {
+                      await validateKey.mutateAsync(llmKey.trim());
+                      setStoredLlmKey(llmKey.trim());
+                      setIsKeySaved(true);
+                      setShowKey(false);
+                      toast.success("API Key validated and saved successfully!");
+                    } catch (err) {
+                      toast.error(apiErrorMessage(err, "Invalid API Key"));
+                    }
+                  }}
+                  disabled={validateKey.isPending}
+                  className="!h-9 !px-4 text-xs"
+                >
+                  {validateKey.isPending ? "Validating..." : "Validate & Save"}
+                </PillButton>
+                {llmKey && (
+                  <PillButton
+                    variant="ghost"
+                    onClick={() => {
+                      setLlmKey("");
+                    }}
+                    disabled={validateKey.isPending}
+                    className="!h-9 !px-4 text-xs"
+                  >
+                    Clear
+                  </PillButton>
+                )}
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </AppLayout>

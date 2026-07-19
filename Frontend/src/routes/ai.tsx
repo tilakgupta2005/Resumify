@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Download, FileText, RotateCw, Save, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Download, FileText, RotateCw, Save, Sparkles, Key, Eye, EyeOff, X as CloseIcon } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import { AppLayout } from "@/components/app-layout";
 import { Card, PillButton } from "@/components/ui-kit";
-import { apiErrorMessage } from "@/lib/api";
-import { useGenerateResume } from "@/lib/queries";
+import { apiErrorMessage, getStoredLlmKey, setStoredLlmKey } from "@/lib/api";
+import { useGenerateResume, useValidateKey } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/ai")({
@@ -33,11 +33,23 @@ function AIPage() {
   const generate = useGenerateResume();
   const previewRef = useRef<HTMLDivElement>(null);
 
+  const [showModal, setShowModal] = useState(false);
+  const [modalKey, setModalKey] = useState("");
+  const [showModalKey, setShowModalKey] = useState(false);
+  const validateKey = useValidateKey();
+
   const run = async () => {
     if (jd.trim().length < 20) {
       toast.error("Paste a real job description first.");
       return;
     }
+
+    const key = getStoredLlmKey();
+    if (!key) {
+      setShowModal(true);
+      return;
+    }
+
     // Scroll preview panel into focus on mobile and tablet
     setTimeout(() => {
       previewRef.current?.scrollIntoView({
@@ -58,6 +70,26 @@ function AIPage() {
       toast.error(apiErrorMessage(err, "Generation failed"));
     }
   };
+
+  const handleValidateAndGenerate = async () => {
+    if (!modalKey.trim()) {
+      toast.error("Please enter a key.");
+      return;
+    }
+    try {
+      await validateKey.mutateAsync(modalKey.trim());
+      setStoredLlmKey(modalKey.trim());
+      setShowModal(false);
+      toast.success("API Key validated successfully!");
+      // Automatically trigger generation
+      setTimeout(() => {
+        run();
+      }, 100);
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Validation failed"));
+    }
+  };
+
 
   useEffect(() => {
     return () => {
@@ -161,6 +193,104 @@ function AIPage() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowModal(false)}
+              className="absolute inset-0 bg-foreground/30 backdrop-blur-md"
+            />
+            {/* Modal Box */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: "spring", duration: 0.3 }}
+              className="relative w-full max-w-md bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-float z-10"
+            >
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition cursor-pointer"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-9 w-9 rounded-2xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                  <Key className="h-4 w-4" />
+                </div>
+                <h3 className="font-display font-bold text-lg">
+                  Gemini API Key Required
+                </h3>
+              </div>
+
+              <p className="text-sm text-muted-foreground mb-4">
+                To generate resumes using AI, you need to provide your Google Gemini API key. It will be stored safely in your browser.
+              </p>
+
+              <div className="bg-muted/40 border border-border/50 rounded-2xl p-4 text-xs space-y-2 mb-6">
+                <div className="font-semibold text-foreground">How to get your free key:</div>
+                <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
+                  <li>
+                    Open{" "}
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Google AI Studio
+                    </a>
+                  </li>
+                  <li>Sign in with your Google account</li>
+                  <li>Click <strong className="text-foreground">Create API key</strong> in the sidebar</li>
+                  <li>Copy the key and paste it below</li>
+                </ol>
+              </div>
+
+              <div className="space-y-4">
+                <div className="relative flex items-center">
+                  <input
+                    type={showModalKey ? "text" : "password"}
+                    value={modalKey}
+                    onChange={(e) => setModalKey(e.target.value)}
+                    placeholder="Enter your Gemini API key (AIzaSy...)"
+                    className="w-full h-11 pl-4 pr-12 rounded-2xl bg-muted/60 focus:bg-card border border-transparent focus:border-border outline-none text-sm transition font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowModalKey(!showModalKey)}
+                    className="absolute right-4 text-muted-foreground hover:text-foreground transition cursor-pointer"
+                  >
+                    {showModalKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <PillButton
+                    variant="ghost"
+                    onClick={() => setShowModal(false)}
+                    disabled={validateKey.isPending}
+                  >
+                    Cancel
+                  </PillButton>
+                  <PillButton
+                    onClick={handleValidateAndGenerate}
+                    disabled={validateKey.isPending}
+                  >
+                    {validateKey.isPending ? "Validating..." : "Validate & Generate"}
+                  </PillButton>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 }
