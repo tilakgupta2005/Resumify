@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/ai")({
   head: () => ({
-    title: "AI Resume Generator — Resumify",
+    title: "Resumify",
     meta: [
       {
         name: "description",

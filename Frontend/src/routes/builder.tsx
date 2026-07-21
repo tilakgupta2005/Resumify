@@ -9,7 +9,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useForm,
   useFieldArray,
@@ -40,7 +40,7 @@ const builderSearchSchema = z.object({
 export const Route = createFileRoute("/builder")({
   validateSearch: builderSearchSchema,
   head: () => ({
-    title: "Resume Builder — Resumify",
+    title: "Resumify",
     meta: [
       {
         name: "description",
@@ -194,25 +194,7 @@ function BuilderPage() {
               onSubmit={methods.handleSubmit((values) => submit(values, true), onInvalid)}
             >
               <Card className="!p-4 sm:!p-6 md:!p-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={step}
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -12 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {isLoading ? (
-                      <div className="h-64 grid place-items-center text-muted-foreground">
-                        Loading resume…
-                      </div>
-                    ) : (
-                      <StepContent step={step} />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-
-                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-6">
                   <PillButton
                     type="button"
                     variant="ghost"
@@ -244,6 +226,24 @@ function BuilderPage() {
                     )}
                   </div>
                 </div>
+
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, x: 12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isLoading ? (
+                      <div className="h-64 grid place-items-center text-muted-foreground">
+                        Loading resume…
+                      </div>
+                    ) : (
+                      <StepContent step={step} />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </Card>
             </form>
           </FormProvider>
@@ -260,44 +260,96 @@ function Stepper({
   step: number;
   setStep: (n: number) => void;
 }) {
+  const containerRef = useRef<HTMLOListElement>(null);
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+
+  useEffect(() => {
+    itemRefs.current[step]?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [step]);
+
+  const scroll = (direction: "left" | "right") => {
+    if (containerRef.current) {
+      const scrollAmount = direction === "left" ? -220 : 220;
+      containerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLOListElement>) => {
+    if (containerRef.current && Math.abs(e.deltaY) > 0) {
+      containerRef.current.scrollBy({ left: e.deltaY, behavior: "auto" });
+    }
+  };
+
   return (
     <Card className="!p-3 h-fit sticky top-16 lg:top-6 z-20 overflow-hidden w-full">
-      <ol className="flex gap-1 overflow-x-auto no-scrollbar">
-        {STEPS.map((label, i) => {
-          const active = i === step;
-          const done = i < step;
-          return (
-            <li key={label} className="shrink-0">
-              <button
-                type="button"
-                onClick={() => setStep(i)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 h-10 rounded-full text-sm font-medium transition",
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : done
-                      ? "text-foreground hover:bg-muted"
-                      : "text-muted-foreground hover:bg-muted",
-                )}
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => scroll("left")}
+          className="h-9 w-9 shrink-0 grid place-items-center rounded-full border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        <ol
+          ref={containerRef}
+          onWheel={handleWheel}
+          className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth flex-1"
+        >
+          {STEPS.map((label, i) => {
+            const active = i === step;
+            const done = i < step;
+            return (
+              <li
+                key={label}
+                ref={(el) => { itemRefs.current[i] = el; }}
+                className="shrink-0"
               >
-                <span
+                <button
+                  type="button"
+                  onClick={() => setStep(i)}
                   className={cn(
-                    "h-6 w-6 grid place-items-center rounded-full text-[11px] font-semibold",
+                    "w-full flex items-center gap-2.5 px-3.5 h-10 rounded-full text-sm font-medium transition whitespace-nowrap",
                     active
-                      ? "bg-foreground text-primary"
+                      ? "bg-primary text-primary-foreground"
                       : done
-                        ? "bg-success text-success-foreground"
-                        : "bg-muted text-muted-foreground",
+                        ? "text-foreground hover:bg-muted"
+                        : "text-muted-foreground hover:bg-muted",
                   )}
                 >
-                  {done ? <Check className="h-3 w-3" /> : i + 1}
-                </span>
-                <span className="truncate">{label}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+                  <span
+                    className={cn(
+                      "h-6 w-6 grid place-items-center rounded-full text-[11px] font-semibold shrink-0",
+                      active
+                        ? "bg-foreground text-primary"
+                        : done
+                          ? "bg-success text-success-foreground"
+                          : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {done ? <Check className="h-3 w-3" /> : i + 1}
+                  </span>
+                  <span className="truncate">{label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+
+        <button
+          type="button"
+          onClick={() => scroll("right")}
+          className="h-9 w-9 shrink-0 grid place-items-center rounded-full border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
     </Card>
   );
 }
@@ -381,11 +433,22 @@ function Field({
   );
 }
 
-function StepHeader({ title, desc }: { title: string; desc?: string }) {
+function StepHeader({
+  title,
+  desc,
+  action,
+}: {
+  title: string;
+  desc?: string;
+  action?: React.ReactNode;
+}) {
   return (
-    <div className="mb-6">
-      <h2 className="font-display font-bold text-2xl">{title}</h2>
-      {desc && <p className="text-muted-foreground text-sm mt-1">{desc}</p>}
+    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 className="font-display font-bold text-2xl">{title}</h2>
+        {desc && <p className="text-muted-foreground text-sm mt-1">{desc}</p>}
+      </div>
+      {action && <div>{action}</div>}
     </div>
   );
 }
@@ -609,9 +672,20 @@ function RepeatableSection<
     control,
     name: name as any,
   });
+
+  const addButton = (
+    <PillButton
+      type="button"
+      variant="secondary"
+      onClick={() => append(defaultItem as any)}
+    >
+      <Plus className="h-4 w-4" /> Add {heading.replace(/s$/, "")}
+    </PillButton>
+  );
+
   return (
     <div>
-      <StepHeader title={heading} desc={desc} />
+      <StepHeader title={heading} desc={desc} action={addButton} />
       <div className="space-y-4">
         {fields.length === 0 && (
           <div className="text-sm text-muted-foreground border border-dashed border-border rounded-2xl p-8 text-center">
@@ -637,15 +711,6 @@ function RepeatableSection<
             {renderItem(i)}
           </div>
         ))}
-      </div>
-      <div className="mt-5">
-        <PillButton
-          type="button"
-          variant="secondary"
-          onClick={() => append(defaultItem as any)}
-        >
-          <Plus className="h-4 w-4" /> Add {heading.replace(/s$/, "")}
-        </PillButton>
       </div>
     </div>
   );
@@ -826,7 +891,7 @@ function ProjectsStep() {
       itemLabel={(i) => `Project #${i + 1}`}
       defaultItem={{
         project_name: "",
-        team_size: "",
+        team_size: "1",
         project_url: "",
         technologies: [],
         description: "",
@@ -974,9 +1039,20 @@ function ListStep({
   const { control, register, formState: { errors } } = useFormContext<Resume>();
   const { fields, append, remove } = useFieldArray({ control, name });
   const listErrors = errors[name] as any;
+
+  const addButton = (
+    <PillButton
+      type="button"
+      variant="secondary"
+      onClick={() => append({ title: "", description: "" })}
+    >
+      <Plus className="h-4 w-4" /> Add item
+    </PillButton>
+  );
+
   return (
     <div>
-      <StepHeader title={heading} desc={desc} />
+      <StepHeader title={heading} desc={desc} action={addButton} />
       <div className="space-y-3">
         {fields.length === 0 && (
           <div className="text-sm text-muted-foreground border border-dashed border-border rounded-2xl p-8 text-center">
@@ -1015,15 +1091,6 @@ function ListStep({
             )}
           </div>
         ))}
-      </div>
-      <div className="mt-4">
-        <PillButton
-          type="button"
-          variant="secondary"
-          onClick={() => append({ title: "", description: "" })}
-        >
-          <Plus className="h-4 w-4" /> Add item
-        </PillButton>
       </div>
     </div>
   );

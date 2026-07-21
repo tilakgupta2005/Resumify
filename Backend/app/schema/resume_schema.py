@@ -79,8 +79,8 @@ class PersonalInfo(BaseModel):
     def validate_linkedin_url(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return v
-        if not (v.startswith("https://www.linkedin.com/in/")):
-            raise ValueError("URL must start with https://www.linkedin.com/in/")
+        if not (v.startswith("https://linkedin.com/in/")):
+            raise ValueError("URL must start with https://linkedin.com/in/")
         return v
     
     @field_validator("github")

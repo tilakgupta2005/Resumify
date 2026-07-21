@@ -14,7 +14,7 @@ import {
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    title: "Resumify — Build ATS-friendly resumes with AI",
+    title: "Resumify",
     meta: [
       {
         name: "description",

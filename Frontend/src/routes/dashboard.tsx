@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
-    title: "Dashboard — Resumify",
+    title: "Resumify",
     meta: [
       {
         name: "description",

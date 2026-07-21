@@ -189,7 +189,7 @@ function fromBackendResume(payload: any): Resume {
       projects: Array.isArray(b.projects)
         ? b.projects.map((p: any) => ({
             project_name: p?.project_name || "",
-            team_size: p?.team_size ? p.team_size.toString() : "",
+            team_size: p?.team_size ? p.team_size.toString() : "1",
             project_url: p?.project_url || "",
             technologies: Array.isArray(p?.technologies_used)
               ? p.technologies_used

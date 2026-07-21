@@ -12,7 +12,7 @@ import { useResetPassword } from "@/lib/queries";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    title: "Reset Password — Resumify",
+    title: "Resumify",
     meta: [{ name: "robots", content: "noindex" }],
   }),
   component: ResetPasswordPage,

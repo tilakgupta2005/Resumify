@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
-    title: "Sign in — Resumify",
+    title: "Resumify",
     meta: [
       {
         name: "description",

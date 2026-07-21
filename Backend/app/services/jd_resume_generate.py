@@ -9,6 +9,8 @@ from app.prompt.professional_summary_prompt import professional_summary_prompt
 from app.services.skill_service import SkillService
 from app.services.experience_service import ExperienceService
 from app.services.project_service import ProjectService
+from datetime import datetime
+import re
 
 
 def jd_resume_json(jd_text: str, user_id: str, llm):
@@ -28,6 +30,10 @@ def jd_resume_json(jd_text: str, user_id: str, llm):
     base_resume["experience"] = ExperienceService.optimize(jd_summary, base_resume, llm)
 
     base_resume["education"] = get_recent_items(base_resume["education"], n=2)
+    for edu in base_resume["education"]:
+        edu["start_date"] = datetime.strptime(edu["start_date"], "%Y-%m-%d").strftime("%b %Y")
+        if edu["end_date"]:
+            edu["end_date"] = datetime.strptime(edu["end_date"], "%Y-%m-%d").strftime("%b %Y")
 
     if base_resume.get("certifications"):
         certifications = []
@@ -48,6 +54,15 @@ def jd_resume_json(jd_text: str, user_id: str, llm):
                 jd_summary,
                 n=n
             )
+    
+    if base_resume["personal_info"]["linkedin"]:
+        base_resume["personal_info"]["front_linkedin"] = clean_url(base_resume["personal_info"]["linkedin"])
+
+    if base_resume["personal_info"]["github"]:
+        base_resume["personal_info"]["front_github"] = clean_url(base_resume["personal_info"]["github"])
+    
+    if base_resume["personal_info"]["portfolio"]:
+        base_resume["personal_info"]["front_portfolio"] = clean_url(base_resume["personal_info"]["portfolio"])
 
     base_resume["projects"] = ProjectService.optimize(jd_summary, user_id, jd_summary_embedding, llm)
 
@@ -62,3 +77,10 @@ def jd_resume_json(jd_text: str, user_id: str, llm):
 
     print(f"Successful user resume data reterival for user:{user_id}")
     return base_resume, jd_summary_result.company
+
+
+def clean_url(url: str) -> str:
+    if not url:
+        return url
+
+    return re.sub(r"^(https?://)?(www\.)?", "", url)

@@ -23,7 +23,7 @@ import { getStoredLlmKey, setStoredLlmKey, removeStoredLlmKey, apiErrorMessage }
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
-    title: "Profile — Resumify",
+    title: "Resumify",
     meta: [{ name: "robots", content: "noindex" }],
   }),
   component: ProfilePage,

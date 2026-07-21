@@ -42,8 +42,8 @@ export const personalInfoSchema = z.object({
     .optional()
     .default("")
     .refine(
-      (val) => !val || val.startsWith("https://www.linkedin.com/in/"),
-      "URL must start with https://www.linkedin.com/in/"
+      (val) => !val || val.startsWith("https://linkedin.com/in/"),
+      "URL must start with https://linkedin.com/in/"
     ),
   github: z
     .string()

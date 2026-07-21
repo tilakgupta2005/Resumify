@@ -11,7 +11,7 @@ Rules:
 - Use ONLY the provided resume information.
 - Do NOT invent experience, responsibilities, skills, certifications, projects, technologies,
   metrics, or achievements.
-- Strictly adhere to the character limit of 150-500 characters (including spaces).
+- Strictly adhere to the character limit of 150-400 characters (including spaces).
 - Begin directly with the candidate's role or technical expertise (e.g., "Software engineer
   with...", "Computer science graduate with...", "Machine learning engineer with..."). Include a
   years-of-experience figure here only if it can be derived from the resume's own dates.
