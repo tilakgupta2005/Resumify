@@ -9,6 +9,7 @@ import { Sparkles, Eye, EyeOff, FileText } from "lucide-react";
 import { PillButton } from "@/components/ui-kit";
 import { apiErrorMessage } from "@/lib/api";
 import { useResetPassword } from "@/lib/queries";
+import { PasswordRequirementsPopover } from "@/components/PasswordRequirements";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -26,9 +27,8 @@ const resetPasswordSchema = z
       .max(128, "Password must not exceed 128 characters")
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-      .regex(/\d/, "Password must contain at least one digit")
       .regex(
-        /[!@#$%^&*(),.?":{}|<>]/,
+        /[!@#$%^&*(),.?":{}|<>_~\-+=\[\]\\\/]/,
         "Password must contain at least one special character",
       ),
     confirm: z.string().min(8, "Required"),
@@ -40,6 +40,7 @@ const resetPasswordSchema = z
 
 function ResetPasswordPage() {
   const [show, setShow] = useState(false);
+  const [showPopover, setShowPopover] = useState(false);
   const [success, setSuccess] = useState(false);
   const [accessToken, setAccessToken] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
@@ -67,11 +68,15 @@ function ResetPasswordPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<z.infer<typeof resetPasswordSchema>>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: "", confirm: "" },
   });
+
+  const passwordValue = watch("password") || "";
+  const passwordRegister = register("password");
 
   const onSubmit = handleSubmit(async (values) => {
     if (!accessToken || !refreshToken) {
@@ -167,7 +172,15 @@ function ResetPasswordPage() {
                         type={show ? "text" : "password"}
                         autoComplete="new-password"
                         className={inputCls}
-                        {...register("password")}
+                        {...passwordRegister}
+                        onFocus={(e) => {
+                          passwordRegister.onFocus(e);
+                          setShowPopover(true);
+                        }}
+                        onBlur={(e) => {
+                          passwordRegister.onBlur(e);
+                          setShowPopover(false);
+                        }}
                       />
                       <button
                         type="button"
@@ -182,6 +195,11 @@ function ResetPasswordPage() {
                         )}
                       </button>
                     </div>
+                    <PasswordRequirementsPopover
+                      password={passwordValue}
+                      isVisible={showPopover || passwordValue.length > 0}
+                      className="mt-2"
+                    />
                   </Field>
                   <Field
                     label="Confirm Password"

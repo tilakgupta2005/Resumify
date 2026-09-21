@@ -11,6 +11,7 @@ import { apiErrorMessage, setStoredToken, USER_KEY } from "@/lib/api";
 import { useLogin, useSignup, useForgotPassword } from "@/lib/queries";
 import { notifyAuthChange, useAuthToken } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
+import { PasswordRequirementsPopover } from "@/components/PasswordRequirements";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -27,9 +28,19 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const passwordRule = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(
+    /[!@#$%^&*(),.?":{}|<>_~\-+=\[\]\\\/]/,
+    "Password must contain at least one special character",
+  );
+
 const loginSchema = z.object({
   email: z.string().email("Invalid email"),
-  password: z.string().min(6, "At least 6 characters"),
+  password: z.string().min(1, "Password is required"),
   remember: z.boolean().optional(),
 });
 
@@ -37,8 +48,8 @@ const signupSchema = z
   .object({
     name: z.string().min(2, "Required"),
     email: z.string().email("Invalid email"),
-    password: z.string().min(6, "At least 6 characters"),
-    confirm: z.string().min(6, "Required"),
+    password: passwordRule,
+    confirm: z.string().min(1, "Required"),
   })
   .refine((v) => v.password === v.confirm, {
     message: "Passwords do not match",
@@ -228,18 +239,24 @@ function LoginForm({ forgotPassword }: { forgotPassword: () => void }) {
 }
 
 function SignupForm({ switchMode }: { switchMode: () => void }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showPopover, setShowPopover] = useState(false);
   const navigate = useNavigate();
   const signupMutation = useSignup();
   const loginMutation = useLogin();
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: { name: "", email: "", password: "", confirm: "" },
   });
 
+  const passwordValue = watch("password") || "";
+  const passwordRegister = register("password");
   const isPending = signupMutation.isPending || loginMutation.isPending;
 
   const onSubmit = handleSubmit(async (values) => {
@@ -283,10 +300,59 @@ function SignupForm({ switchMode }: { switchMode: () => void }) {
         />
       </Field>
       <Field label="Password" error={errors.password?.message}>
-        <input type="password" className={inputCls} {...register("password")} />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            className={inputCls}
+            {...passwordRegister}
+            onFocus={(e) => {
+              passwordRegister.onFocus(e);
+              setShowPopover(true);
+            }}
+            onBlur={(e) => {
+              passwordRegister.onBlur(e);
+              setShowPopover(false);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            aria-label="Toggle password"
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        <PasswordRequirementsPopover
+          password={passwordValue}
+          isVisible={showPopover || passwordValue.length > 0}
+          className="mt-2"
+        />
       </Field>
       <Field label="Confirm password" error={errors.confirm?.message}>
-        <input type="password" className={inputCls} {...register("confirm")} />
+        <div className="relative">
+          <input
+            type={showConfirm ? "text" : "password"}
+            className={inputCls}
+            {...register("confirm")}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            aria-label="Toggle confirm password"
+          >
+            {showConfirm ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </Field>
       <PillButton
         type="submit"
