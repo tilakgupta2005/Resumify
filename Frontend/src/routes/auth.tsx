@@ -361,6 +361,27 @@ function SignupForm({ switchMode }: { switchMode: () => void }) {
       >
         {isPending ? "Creating account…" : "Create account"}
       </PillButton>
+      <p className="text-[11px] text-center text-muted-foreground mt-2 leading-relaxed">
+        By signing up, you agree to our{" "}
+        <a
+          href="/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground"
+        >
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground"
+        >
+          Privacy Policy
+        </a>{" "}
+        under Indian legal standards.
+      </p>
     </form>
   );
 }

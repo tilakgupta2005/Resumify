@@ -6,3 +6,10 @@ from app.core.config import get_settings
 def get_supabase_client() -> Client:
     settings = get_settings()
     return create_client(settings.supabase_url, settings.supabase_key)
+
+
+def cronjob_db():
+    if get_supabase_client().table("skills").select("*").limit(1).execute():
+        return True
+    else:
+        return False

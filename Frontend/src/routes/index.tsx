@@ -1,20 +1,20 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuthToken } from "@/lib/use-auth";
 import { motion } from "framer-motion";
-import { 
-  Sparkles, 
-  FileText, 
-  Zap, 
-  ArrowRight, 
-  Briefcase, 
-  FileCode2, 
-  ShieldCheck 
+import {
+  Sparkles,
+  FileText,
+  Zap,
+  ArrowRight,
+  Briefcase,
+  FileCode2,
+  ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    title: "Resumify",
+    title: "Resumify — Build ATS-friendly resumes with AI",
     meta: [
       {
         name: "description",
@@ -45,15 +45,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { ready, isAuthenticated } = useAuthToken();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (ready && isAuthenticated) {
-      navigate({ to: "/dashboard", replace: true });
-    }
-  }, [ready, isAuthenticated, navigate]);
-
-  if (!ready || isAuthenticated) {
+  if (!ready) {
     return (
       <div className="min-h-screen grid place-items-center bg-background">
         <div className="h-8 w-8 rounded-full border-2 border-foreground/20 border-t-foreground animate-spin" />
@@ -65,7 +58,7 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-foreground overflow-x-hidden">
       {/* Top Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto h-16 px-6 sm:px-8 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto h-16 px-4 sm:px-8 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-xl bg-primary grid place-items-center shadow-soft">
               <FileText className="h-5 w-5 text-primary-foreground" />
@@ -75,20 +68,33 @@ function Index() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/auth"
-              className="text-sm font-semibold hover:text-primary transition-colors px-4 py-2"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/auth"
-              className="inline-flex items-center gap-1.5 px-5 h-10 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:brightness-95 transition shadow-soft"
-            >
-              Get Started <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 h-9 sm:h-10 rounded-full bg-primary text-primary-foreground font-semibold text-xs sm:text-sm hover:brightness-95 active:scale-95 transition shadow-soft"
+              >
+                <span>Dashboard</span>
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                to="/auth"
+                className="text-xs sm:text-sm font-semibold hover:text-primary transition-colors px-2.5 sm:px-4 py-2 rounded-full active:scale-95"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/auth"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-5 h-9 sm:h-10 rounded-full bg-primary text-primary-foreground font-semibold text-xs sm:text-sm hover:brightness-95 active:scale-95 transition shadow-soft shrink-0"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 
@@ -103,7 +109,8 @@ function Index() {
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-foreground font-sans font-semibold text-xs tracking-wider uppercase mb-6"
             >
-              <Sparkles className="h-3.5 w-3.5 fill-current text-primary" /> AI Career Accelerator
+              <Sparkles className="h-3.5 w-3.5 fill-current text-primary" /> AI
+              Career Accelerator
             </motion.div>
 
             <motion.h1
@@ -112,7 +119,11 @@ function Index() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-sans font-bold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.1] text-foreground"
             >
-              Resumes that get you <span className="underline decoration-primary decoration-wavy underline-offset-8">hired</span>, powered by AI.
+              Resumes that get you{" "}
+              <span className="underline decoration-primary decoration-wavy underline-offset-8">
+                hired
+              </span>
+              , powered by AI.
             </motion.h1>
 
             <motion.p
@@ -121,27 +132,53 @@ function Index() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-muted-foreground mt-6 text-lg max-w-xl leading-relaxed"
             >
-              Resumify helps you craft clean, ATS-compliant resumes, manage your professional history, and instantly tailor descriptions to any job post using custom AI models.
+              Resumify helps you craft clean, ATS-compliant resumes, manage your
+              professional history, and instantly tailor descriptions to any job
+              post using custom AI models.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-8 flex flex-wrap items-center gap-4 w-full sm:w-auto"
+              className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto"
             >
               <Link
-                to="/auth"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 h-12 rounded-full bg-primary text-primary-foreground font-semibold hover:brightness-95 transition shadow-soft cursor-pointer text-sm"
+                to={isAuthenticated ? "/dashboard" : "/auth"}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 h-13 sm:h-12 rounded-full bg-primary text-primary-foreground font-bold text-sm sm:text-base hover:brightness-95 active:scale-[0.98] transition-all shadow-soft cursor-pointer text-center group ring-4 ring-primary/15"
               >
-                Create Free Resume <ArrowRight className="h-4 w-4" />
+                <span>
+                  {isAuthenticated ? "Go to Dashboard" : "Create Free Resume"}
+                </span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <a
                 href="#features"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-6 h-12 rounded-full border border-border bg-card hover:bg-muted text-foreground font-semibold transition cursor-pointer text-sm"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 h-13 sm:h-12 rounded-full border border-border/80 bg-card hover:bg-muted text-foreground font-semibold text-sm sm:text-base active:scale-[0.98] transition-all cursor-pointer text-center"
               >
                 Explore Features
               </a>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground"
+            >
+              <span className="flex items-center gap-1.5 font-medium">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Free basic
+                plan
+              </span>
+              <span className="opacity-30 hidden sm:inline">•</span>
+              <span className="flex items-center gap-1.5 font-medium">
+                <Zap className="h-3.5 w-3.5 text-primary" /> Instant ATS
+                analysis
+              </span>
+              <span className="opacity-30 hidden sm:inline">•</span>
+              <span className="hidden sm:inline font-medium">
+                No credit card required
+              </span>
             </motion.div>
 
             <motion.div
@@ -151,16 +188,28 @@ function Index() {
               className="mt-12 grid grid-cols-3 gap-6 sm:gap-8 border-t border-border/60 pt-8 w-full"
             >
               <div>
-                <div className="font-sans font-bold text-2xl sm:text-3xl text-foreground">98%</div>
-                <div className="text-xs text-muted-foreground mt-1">ATS Pass Rate</div>
+                <div className="font-sans font-bold text-2xl sm:text-3xl text-foreground">
+                  98%
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  ATS Pass Rate
+                </div>
               </div>
               <div>
-                <div className="font-sans font-bold text-2xl sm:text-3xl text-foreground">10x</div>
-                <div className="text-xs text-muted-foreground mt-1">Faster Drafting</div>
+                <div className="font-sans font-bold text-2xl sm:text-3xl text-foreground">
+                  10x
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Faster Drafting
+                </div>
               </div>
               <div>
-                <div className="font-sans font-bold text-2xl sm:text-3xl text-foreground">Free</div>
-                <div className="text-xs text-muted-foreground mt-1">Basic Resume</div>
+                <div className="font-sans font-bold text-2xl sm:text-3xl text-foreground">
+                  Free
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Basic Resume
+                </div>
               </div>
             </motion.div>
           </div>
@@ -179,7 +228,9 @@ function Index() {
               <div className="absolute -top-4 -right-4 h-14 w-32 rounded-2xl bg-success text-success-foreground border border-border p-3 shadow-soft flex items-center gap-2.5 z-20">
                 <ShieldCheck className="h-6 w-6 shrink-0" />
                 <div>
-                  <div className="text-[10px] uppercase font-bold tracking-wider opacity-70">ATS Score</div>
+                  <div className="text-[10px] uppercase font-bold tracking-wider opacity-70">
+                    ATS Score
+                  </div>
                   <div className="text-sm font-bold leading-none">98 / 100</div>
                 </div>
               </div>
@@ -187,8 +238,12 @@ function Index() {
               {/* Header Info */}
               <div className="flex items-start justify-between border-b border-border/40 pb-4 mb-4">
                 <div>
-                  <h3 className="font-sans font-bold text-lg text-foreground leading-none">Sarah Jenkins</h3>
-                  <p className="text-xs text-foreground/80 font-bold mt-1">Lead Software Architect</p>
+                  <h3 className="font-sans font-bold text-lg text-foreground leading-none">
+                    Sarah Jenkins
+                  </h3>
+                  <p className="text-xs text-foreground/80 font-bold mt-1">
+                    Lead Software Architect
+                  </p>
                 </div>
                 <div className="text-[10px] text-muted-foreground text-right">
                   <div>New York, NY</div>
@@ -199,7 +254,8 @@ function Index() {
               {/* Section 1: Summary */}
               <div className="mb-4">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-                  <Sparkles className="h-3 w-3 text-primary" /> Professional Summary
+                  <Sparkles className="h-3 w-3 text-primary" /> Professional
+                  Summary
                 </h4>
                 <div className="h-2 bg-muted rounded-full w-full mb-1" />
                 <div className="h-2 bg-muted rounded-full w-5/6" />
@@ -211,8 +267,12 @@ function Index() {
                   <Briefcase className="h-3 w-3" /> Experience
                 </h4>
                 <div className="flex justify-between items-baseline mb-1">
-                  <div className="text-xs font-bold text-foreground">Google — Staff Architect</div>
-                  <div className="text-[9px] text-muted-foreground">2022 - Present</div>
+                  <div className="text-xs font-bold text-foreground">
+                    Google — Staff Architect
+                  </div>
+                  <div className="text-[9px] text-muted-foreground">
+                    2022 - Present
+                  </div>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full w-11/12 mb-1" />
                 <div className="h-1.5 bg-muted rounded-full w-4/5" />
@@ -224,10 +284,18 @@ function Index() {
                   <FileCode2 className="h-3 w-3" /> Skills
                 </h4>
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  <span className="text-[9px] font-bold bg-primary/20 text-foreground px-2 py-0.5 rounded-full border border-primary/30">React</span>
-                  <span className="text-[9px] font-bold bg-primary/20 text-foreground px-2 py-0.5 rounded-full border border-primary/30">FastAPI</span>
-                  <span className="text-[9px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border">TypeScript</span>
-                  <span className="text-[9px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border">Docker</span>
+                  <span className="text-[9px] font-bold bg-primary/20 text-foreground px-2 py-0.5 rounded-full border border-primary/30">
+                    React
+                  </span>
+                  <span className="text-[9px] font-bold bg-primary/20 text-foreground px-2 py-0.5 rounded-full border border-primary/30">
+                    FastAPI
+                  </span>
+                  <span className="text-[9px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border">
+                    TypeScript
+                  </span>
+                  <span className="text-[9px] font-bold bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border">
+                    Docker
+                  </span>
                 </div>
               </div>
             </motion.div>
@@ -236,15 +304,22 @@ function Index() {
       </section>
 
       {/* Features Grid Section */}
-      <section id="features" className="py-20 px-6 sm:px-8 border-t border-border/40 bg-muted/20">
+      <section
+        id="features"
+        className="py-20 px-6 sm:px-8 border-t border-border/40 bg-muted/20"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-xl mx-auto mb-16">
-            <span className="text-xs font-bold text-foreground/80 uppercase tracking-widest">Built for Results</span>
+            <span className="text-xs font-bold text-foreground/80 uppercase tracking-widest">
+              Built for Results
+            </span>
             <h2 className="font-sans font-bold text-3xl sm:text-4xl text-foreground mt-2">
               Everything you need to land your next interview
             </h2>
             <p className="text-muted-foreground mt-3 text-sm">
-              Stop guessing if your resume matches the job description. Our tools align everything to fit ATS guidelines and recruiter expectations.
+              Stop guessing if your resume matches the job description. Our
+              tools align everything to fit ATS guidelines and recruiter
+              expectations.
             </p>
           </div>
 
@@ -254,9 +329,12 @@ function Index() {
               <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mb-5 shadow-soft">
                 <FileText className="h-5 w-5" />
               </div>
-              <h3 className="font-sans font-bold text-lg text-foreground">ATS-Compliant Structure</h3>
+              <h3 className="font-sans font-bold text-lg text-foreground">
+                ATS-Compliant Structure
+              </h3>
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                Standard templates formatted specifically to load perfectly inside applicant tracking systems without parse errors.
+                Standard templates formatted specifically to load perfectly
+                inside applicant tracking systems without parse errors.
               </p>
             </div>
 
@@ -265,9 +343,13 @@ function Index() {
               <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mb-5 shadow-soft">
                 <Sparkles className="h-5 w-5 fill-current" />
               </div>
-              <h3 className="font-sans font-bold text-lg text-foreground">AI Resume Tailoring</h3>
+              <h3 className="font-sans font-bold text-lg text-foreground">
+                AI Resume Tailoring
+              </h3>
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                Instantly adjust bullet points, write summaries, and add matching skills based directly on the job description you copy in.
+                Instantly adjust bullet points, write summaries, and add
+                matching skills based directly on the job description you copy
+                in.
               </p>
             </div>
 
@@ -276,9 +358,13 @@ function Index() {
               <div className="h-10 w-10 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mb-5 shadow-soft">
                 <Zap className="h-5 w-5" />
               </div>
-              <h3 className="font-sans font-bold text-lg text-foreground">Polished UI Controls</h3>
+              <h3 className="font-sans font-bold text-lg text-foreground">
+                Polished UI Controls
+              </h3>
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-                Enter details fast with dynamic inputs, rich error notifications, and a premium custom Month-Year selection calendar dashboard.
+                Enter details fast with dynamic inputs, rich error
+                notifications, and a premium custom Month-Year selection
+                calendar dashboard.
               </p>
             </div>
           </div>
@@ -294,33 +380,68 @@ function Index() {
             Ready to design a CV that captures attention?
           </h2>
           <p className="text-muted-foreground mt-4 text-sm max-w-md relative z-10 leading-relaxed">
-            Create a profile, enter your details step-by-step, and generate targeted applications today. Free basic tier, no credit card required.
+            Create a profile, enter your details step-by-step, and generate
+            targeted applications today. Free basic tier, no credit card
+            required.
           </p>
-          <div className="mt-8 relative z-10">
+          <div className="mt-8 relative z-10 w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
             <Link
-              to="/auth"
-              className="inline-flex items-center gap-1.5 px-8 h-12 rounded-full bg-primary text-primary-foreground font-semibold hover:brightness-95 transition shadow-soft cursor-pointer text-sm"
+              to={isAuthenticated ? "/dashboard" : "/auth"}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 h-13 sm:h-12 rounded-full bg-primary text-primary-foreground font-bold text-sm sm:text-base hover:brightness-95 active:scale-[0.98] transition-all shadow-soft cursor-pointer text-center group ring-4 ring-primary/15"
             >
-              Get Started Now <ArrowRight className="h-4 w-4" />
+              <span>
+                {isAuthenticated ? "Open Dashboard" : "Get Started Now"}
+              </span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-12 px-6 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-primary grid place-items-center">
-              <FileText className="h-4 w-4 text-primary-foreground" />
+      <footer className="border-t border-border/40 py-12 px-6 sm:px-8 bg-card/25">
+        <div className="max-w-7xl mx-auto flex flex-col gap-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-border/30">
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-primary grid place-items-center">
+                <FileText className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="font-sans font-bold text-base tracking-tight text-foreground">
+                Resumify
+              </span>
             </div>
-            <span className="font-sans font-bold text-base tracking-tight text-foreground">
-              Resumify
-            </span>
+
+            {/* Legal Links & Creator Attribution */}
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-muted-foreground">
+              <Link
+                to="/privacy"
+                className="hover:text-foreground transition font-medium"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                to="/terms"
+                className="hover:text-foreground transition font-medium"
+              >
+                Terms of Service
+              </Link>
+              <a
+                href="https://tilak_dev.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/15 hover:bg-primary/25 text-foreground font-bold text-xs transition border border-primary/25 group active:scale-95"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-primary group-hover:rotate-12 transition-transform" />
+                <span>Proudly developed by Tilak</span>
+                <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+              </a>
+            </div>
           </div>
 
-          <div className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Resumify. All rights reserved.
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground text-center sm:text-left">
+            <div>
+              &copy; {new Date().getFullYear()} Resumify. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>

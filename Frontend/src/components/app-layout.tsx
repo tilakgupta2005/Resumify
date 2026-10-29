@@ -263,6 +263,25 @@ function SidebarInner({
         >
           <LogOut className="h-4 w-4" /> Logout
         </button>
+
+        <div className="pt-1.5 px-2 flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
+          <Link to="/privacy" className="hover:text-foreground transition">
+            Privacy
+          </Link>
+          <span>•</span>
+          <Link to="/terms" className="hover:text-foreground transition">
+            Terms
+          </Link>
+          <span>•</span>
+          <a
+            href="https://tilak_dev.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary transition font-medium"
+          >
+            Tilak
+          </a>
+        </div>
       </div>
     </>
   );

@@ -11,7 +11,7 @@ def get_resume(user_id: str) -> dict:
     except Exception as e:
         raise ResumeSaveError(f"Error retrieving resume: {str(e)}")
 
-    if not response.data:
+    if not response.data or not response.data.get("personal_info"):
         raise ResumeNotFoundError("No base resume found for this user. Create one first.")
     return response.data
     

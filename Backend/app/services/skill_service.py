@@ -17,4 +17,7 @@ class SkillService:
         skills.extend(base_resume["skills"])
         skills = list(dict.fromkeys(skills))
         
+        if not skills:
+            return []
+
         return bm25_search(skills, jd_summary, n=len(skills))

@@ -7,7 +7,7 @@ class ExperienceService:
 
     @staticmethod
     def optimize(jd_summary, base_resume, llm):
-        exp = get_recent_items(base_resume["experience"], n=5)
+        exp = get_recent_items(base_resume.get("experience", []), n=5)
 
         if exp:
             experience_llm = llm.with_structured_output(experiencedescription)

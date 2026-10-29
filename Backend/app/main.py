@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer
 from app.router import auth, base_resume, jd_resume
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
+from app.core.database import cronjob_db
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.core.exceptions import AppError, app_error_handler, validation_exception_handler, http_exception_handler
@@ -36,4 +37,5 @@ def root():
 
 @app.get("/health")
 def health_check():
-    return{"status": "OK"}
+    if cronjob_db():
+        return{"status": "OK"}

@@ -1,5 +1,6 @@
 
 from functools import lru_cache
+# pyrefly: ignore[missing-import]
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,7 +39,18 @@ class Settings(BaseSettings):
     cors_allow_origins: str = ""
     @property
     def cors_origins_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
+        origins = [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
+        default_origins = [
+            "https://tryresumify.vercel.app",
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:3000",
+        ]
+        for default in default_origins:
+            if default not in origins:
+                origins.append(default)
+        return origins
 
 
 @lru_cache
