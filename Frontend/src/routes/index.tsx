@@ -426,7 +426,7 @@ function Index() {
                 Terms of Service
               </Link>
               <a
-                href="https://tilak_dev.vercel.app"
+                href="https://tilak-dev.vercel.app"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/15 hover:bg-primary/25 text-foreground font-bold text-xs transition border border-primary/25 group active:scale-95"
