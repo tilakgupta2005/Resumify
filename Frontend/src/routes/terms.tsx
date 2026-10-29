@@ -492,7 +492,7 @@ function TermsPage() {
               Privacy Policy
             </Link>
             <a
-              href="https://tilak_dev.vercel.app"
+              href="https://tilak-dev.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-primary transition font-medium"
