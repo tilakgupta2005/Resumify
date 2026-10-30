@@ -1,9 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const BASE_URL =
-  (typeof import.meta !== "undefined" &&
-    (import.meta as any).env?.VITE_API_BASE_URL) ||
-  "/api";
+const BASE_URL = "/api";
 
 export const TOKEN_KEY = "resumeai_token";
 export const USER_KEY = "resumeai_user";
