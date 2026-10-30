@@ -1,3 +1,8 @@
 {
-  "rewrites": []
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://resumify-backend-btgdh3crchewf0fc.centralindia-01.azurewebsites.net/:path*"
+    }
+  ]
 }
